@@ -26,9 +26,10 @@ ofstream LogA("results/fwd_AllTable.csv", ofstream::out);
 class MyReporter : public PeriodicEventReporter {
 public:
     MyReporter(const MultibodySystem& system, Real interval,PrescribedController* controller
-                ,ForceSet& fset)
+                ,ForceSet& fset, OpenSim::SmoothSphereHalfSpaceForce& cont1,
+		OpenSim::SmoothSphereHalfSpaceForce& cont2)
             : PeriodicEventReporter(interval), system(system),_controller(controller),
-                _fset(fset) {}
+                _fset(fset),_cont1(cont1),_cont2(cont2) {}
 
     // Show x-y position of the pendulum weight as a function of time.
     void handleEvent(const State& state) const override {
@@ -39,6 +40,11 @@ public:
                 system.getMatterSubsystem().calcSystemMassCenterLocationInGround(state);
         Vec3 COM_v = system.getMatterSubsystem().calcSystemMassCenterVelocityInGround(state);
 	double totEne=system.calcEnergy(state);
+//	cout<<"ccc:"<<_cont1.getRecordValues(state)<<endl;
+        //cout<< _fset.getSize()<<endl;
+        //cout<<"..."<<system.getMobilityForces(state,Stage::Dynamics)<<endl;
+    //for (int i=0;i<6;i++) 
+      //  cout<<system.getRigidBodyForces(state,Stage::Dynamics)(i)<<endl;
 
 
 
@@ -122,9 +128,12 @@ public:
 		spEA<<","<<spEK<<","<<spEH<<","<<
 	//	limPow1<<","<<limPow2<<","<<limPow3<<","<<limPow4<<","<<
 		comPos(1)<<","<<COM_v(0)<<","<<COM_v(1)<<
-		","<<totEne<<endl;	      
-        std::cout << state.getTime() <<   
-		"\t,"<< comPos(1)<< "\t,"<<endl; 
+		","<<totEne<<","<<_cont1.getRecordValues(state)[0]<<
+		","<<_cont1.getRecordValues(state)[1]<<endl;	      
+//Array<double> f1=getModel().getComponent<Force>("tforce").getRecordValues(input.state);
+//Array<double> f2=getModel().getComponent<Force>("aforce").getRecordValues(input.state);
+        std::cout << state.getTime() <<":"<<_cont1.getRecordValues(state)[0]<<   
+		","<<_cont1.getRecordValues(state)[1]<<"\t,"<< comPos[1]<< "\t,"<<endl; 
 	//
 	//	limf1->computePotentialEnergy(state)<<
 	//	","<< limf2->computePotentialEnergy(state)<<","
@@ -137,6 +146,8 @@ private:
     const MultibodySystem& system;
     const PrescribedController* _controller;
     const ForceSet& _fset;
+    const OpenSim::SmoothSphereHalfSpaceForce& _cont1;
+    const OpenSim::SmoothSphereHalfSpaceForce& _cont2;
 
 };
 ofstream fwddebugLog("results/fwd_debug.csv", ofstream::out);
@@ -163,9 +174,9 @@ int main(int argc, char *argv[]){
 	string modelFile="con3springs.osim";
 	string mocofile="results/mycolo_traj.sto";
         TimeSeriesTable mocoTable(mocofile);
-        RowVectorView row0=mocoTable.getRowAtIndex(0);
-        int len=row0.size();
-	cout<<"moco springs(KHA):"<<row0(len-3)<<","<<row0(len-2)<<","<<row0(len-1)<<endl;
+        //RowVectorView row0=mocoTable.getRowAtIndex(0);
+        //int len=row0.size();
+	//cout<<"moco springs(KHA):"<<row0(len-3)<<","<<row0(len-2)<<","<<row0(len-1)<<endl;
         string controlsfile="mycolo_controls.sto";
         string statesFile="results/mycolo_states.bin";
 	string controlsFile="results/mycolo_controls.bin";
@@ -236,16 +247,20 @@ int main(int argc, char *argv[]){
     	osimModel.addAnalysis(forceReporter);
     	MuscleAnalysis* muscleReporter = new MuscleAnalysis(&osimModel);
     	osimModel.addAnalysis(muscleReporter);
+	auto& cont1 = osimModel.updComponent<OpenSim::SmoothSphereHalfSpaceForce>(
+                  "tforce");
+	auto& cont2 = osimModel.updComponent<OpenSim::SmoothSphereHalfSpaceForce>(
+                  "aforce");
 
 	const MultibodySystem& system=osimModel.updMultibodySystem();
-        system.addEventReporter(new MyReporter(system,.01,controller,fset));
+        system.addEventReporter(new MyReporter(system,.01,controller,fset,cont1,cont2));
         State &osimState = osimModel.initializeState();
 	//set initial state from first line of statesfile
 	cout<<"apply first line of states...."<<endl;
 	//cout.precision(15);
-	// for (int i=0; i<coloStates.numcols;i++)
-	//{osimModel.setStateVariableValue(osimState,coloStates.labels[i],st[i]);
-        // cout<<coloStates.labels[i]<<":"<<st[i]<<endl;}
+	for (int i=0; i<coloStates.numcols;i++)
+	{osimModel.setStateVariableValue(osimState,coloStates.labels[i],st[i]);
+         cout<<coloStates.labels[i]<<":"<<st[i]<<endl;}
 	//cout<<"get end time from control file..."<<endl;
 
         double tf=time(time.nrow()-1);
@@ -297,6 +312,7 @@ try {
         auto statesTable = manager.getStatesTable();
         STOFileAdapter::write(statesTable, "results/fwd_states.sto");
         cout<<"Wrote states to results/fwd_states.sto"<<endl;
+        forceReporter->getForceStorage().print("results/fwd_forces.sto");
 	//const Set<const Actuator>& actSet = osimModel.get_ControllerSet().get(0).getActuatorSet();
         //auto& probe = osimModel.getProbeSet().get(0);
         //JointInternalPowerProbe*  jwip=dynamic_cast<JointInternalPowerProbe*>(&probe);

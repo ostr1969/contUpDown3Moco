@@ -18,6 +18,8 @@
 
 
 //#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <chrono>
+#include <unistd.h>
 #include <OpenSim/OpenSim.h>
 //#include <OpenSim/Actuators/DelpActuator.h>
 #include "DelpActuator.h"
@@ -34,10 +36,11 @@
 
 using namespace OpenSim;
 using namespace SimTK;
+using std::chrono::system_clock;
 
     double qi0L,qi0H,qi1L,qi1H,qi2L,qi2H,qi3L,qi3H;
     double q0L,q0H,q1L,q1H,q2L,q2H,q3L,q3H;
-    double q0,q1,q2,q3;
+    double q0,q1,q2,q3,pelrot,pelx,pely;
 Model buildmodel(){
 	Model osimModel(data.strings[0].val);
         cout<<"read src/cont3springs.osim"<<endl;
@@ -134,8 +137,10 @@ int main() {
     cout<<"starting moco study\n";
     MocoStudy study;Vector initActivations(14,0.);
         q0=data.doubles[4].val;q1=data.doubles[5].val;q2=data.doubles[6].val;q3=data.doubles[7].val;
+        pelrot=data.doubles[8].val;pelx=data.doubles[9].val;pely=data.doubles[10].val;
 	
         q0=q0*Pi/180.; q1=q1*Pi/180.; q2=q2*Pi/180.; q3=q3*Pi/180.;
+        pelrot=pelrot*Pi/180.;
 
     study.setName("4linkicont");
 
@@ -155,9 +160,9 @@ int main() {
 		data.doubles[3].val, data.doubles[0].val));
 
     // Initial position must be 0, final position must be 1.
-    problem.setStateInfo("/jointset/PelvisToGround/pelvis_rot/value", {-90*Pi/180,10*Pi/180}, 0);
-    problem.setStateInfo("/jointset/PelvisToGround/pelvis_mov_x/value", {-0.1,0.1}, 0);
-    problem.setStateInfo("/jointset/PelvisToGround/pelvis_mov_y/value", {0.3,1.3}, 0.843);
+    problem.setStateInfo("/jointset/PelvisToGround/pelvis_rot/value", {-60*Pi/180,10*Pi/180}, pelrot);
+    problem.setStateInfo("/jointset/PelvisToGround/pelvis_mov_x/value", {-0.1,0.1}, pelx);
+    problem.setStateInfo("/jointset/PelvisToGround/pelvis_mov_y/value", {0.3,1.3},pely);
     problem.setStateInfo("/jointset/ankle/q1_rot/value", MocoBounds(q1L,q1H),
                          MocoInitialBounds(q1), MocoFinalBounds(q1L,q1H));
     problem.setStateInfo("/jointset/knee/q2_rot/value",  {q2L,q2H}, q2, {q2L,q2H});
@@ -187,7 +192,7 @@ p0.appendComponentPath("/forceset/path_spring1");
 p0.setPropertyName("stiffness");
 MocoBounds massBounds(00000, data.ints[6].val*4454.);
 p0.setBounds(massBounds);
-problem.addParameter(p0);
+//problem.addParameter(p0);
 
 MocoParameter p1;
 p1.setName("hip stiffness");
@@ -195,7 +200,7 @@ p1.appendComponentPath("/forceset/path_spring2");
 p1.setPropertyName("stiffness");
 MocoBounds massBounds1(00000,  data.ints[7].val*4454.);
 p1.setBounds(massBounds1);
-problem.addParameter(p1);
+//problem.addParameter(p1);
 
 MocoParameter p2;
 p2.setName("ankle stiffness");
@@ -203,7 +208,7 @@ p2.appendComponentPath("/forceset/path_spring3");
 p2.setPropertyName("stiffness");
 MocoBounds massBounds2(00000,  data.ints[8].val*4454.);
 p2.setBounds(massBounds2);
-problem.addParameter(p2);
+//problem.addParameter(p2);
     // Cost.
     // -----
     //problem.addGoal<MocoFinalTimeGoal>();
@@ -229,9 +234,10 @@ problem.addParameter(p2);
 
     // Now that we've finished setting up the tool, print it to a file.
     study.print("results/mycolo.omoco");
-    //solver.setGuessFile(data.strings[2].val);
+    //solver.setGuessFile("guess_traj.sto");
     // Solve the problem.
     // ==================
+    //usleep(2000000); 
     MocoSolution solution = study.solve();
     //solution.unseal();
     debugLog<<"got objective:"<<solution.getObjective()<<endl;

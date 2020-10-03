@@ -24,25 +24,39 @@
 
 using namespace OpenSim;
 using namespace SimTK;
+using namespace std;
 
 
 void MocoJumpGoal::initializeOnModelImpl(const Model& model ) const {
-    setRequirements(0, 1);
-	//model.print("aaa.osim");
+    setRequirements(1, 2);
     
 }
 
 void MocoJumpGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
 	 Vector_<SpatialVec>  forcesAtMInG;
-        getModel().realizeAcceleration(input.state);
-//      const SimbodyMatterSubsystem& matter= getModel().getMultibodySystem().
-//                        getMatterSubsystem();
-//     matter.calcMobilizerReactionForces( input.state,forcesAtMInG);
-//     integrand=forcesAtMInG[0][1][1];
-//    getModel().realizeVelocity(input.state);
-//    const auto& controls = getModel().getControls(input.state);
-//    integrand = controls.normSqr();
+        getModel().realizeVelocity(input.state);
+    //std::vector<std::string> contact1;
+    //contact1.push_back("tforce");
+    //contact1.push_back("aforce");
+
+	 Array<double> f1=getModel().getComponent<Force>("tforce").getRecordValues(input.state);
+	 Array<double> f2=getModel().getComponent<Force>("aforce").getRecordValues(input.state);
+     double f=f1[1];//+f2[1];
+     double fn,t1,t2,k;
+    if (f>=100){
+    t1=0;t2=5000;double y1=0,y2=5;
+    k=std::max(0.,std::min(1.,(f-t1)/(t2-t1)));
+    fn=k*k*(3-2*k)*(y2-y1)+y1;
+    fn=0;}
+    if (f<50){
+    t1=0;t2=50;double y1=60,y2=0;
+    k=std::max(0.,std::min(1.,(f-t1)/(t2-t1)));
+    fn=k*k*(3-2*k)*(y2-y1)+y1;
+    //cout<<"f:"<<f<<" fn:"<<fn<<endl;
+            }
+    //
+    integrand = fn;
 
 }
 
@@ -63,6 +77,8 @@ void MocoJumpGoal::calcGoalImpl(
     double k=std::max(0.,std::min(1.,(vy-t1)/(t2-t1)));
     double dirac=k*k*(3-2*k);
     cost[0]=-vy*vy/2./9.81*dirac-comFinalP(1);
+    cost[1]=input.integral;
+    //cout<<"cost1:"<<cost[1]<<" ";
 
 /*	getModel().realizeAcceleration(input.final_state);
 	 getModel().getMultibodySystem().getMatterSubsystem().
