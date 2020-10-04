@@ -146,6 +146,8 @@ try
     	m5->setParentFrame(*linkage1);
     	m5->set_location(SimTK::Vec3(-0.05,linkageLength1,0));
      	osimModel.addMarker(m5);
+        Marker *tipmarker=new Marker("tipm",*linkage1,Vec3(0));
+	osimModel.addMarker(tipmarker);
 
 
         // Create 1 degree-of-freedom pin joints between the bodies to create a
@@ -392,7 +394,7 @@ cout<<__LINE__<<endl;
     	osimModel.addComponent(floor);
     	osimModel.addComponent(tipc);
     	osimModel.addComponent(tipa);
-	double cstiffness = 6067776, cdissipation = 2, friction = 0.8, viscosity = 0.5;
+	double cstiffness = 60677760, cdissipation = 2, friction = 0.8, viscosity = 0.5;
  	OpenSim::SmoothSphereHalfSpaceForce* ftip=new OpenSim::SmoothSphereHalfSpaceForce("tforce",
 			*tipc,*floor);
         ftip->set_stiffness(cstiffness);ftip->set_dissipation(cdissipation);

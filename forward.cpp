@@ -25,11 +25,8 @@ ofstream LogA("results/fwd_AllTable.csv", ofstream::out);
 
 class MyReporter : public PeriodicEventReporter {
 public:
-    MyReporter(const MultibodySystem& system, Real interval,PrescribedController* controller
-                ,ForceSet& fset, OpenSim::SmoothSphereHalfSpaceForce& cont1,
-		OpenSim::SmoothSphereHalfSpaceForce& cont2)
-            : PeriodicEventReporter(interval), system(system),_controller(controller),
-                _fset(fset),_cont1(cont1),_cont2(cont2) {}
+    MyReporter(const MultibodySystem& system, Real interval , Model& model)
+            : PeriodicEventReporter(interval), system(system), _model(model) {}
 
     // Show x-y position of the pendulum weight as a function of time.
     void handleEvent(const State& state) const override {
@@ -40,18 +37,18 @@ public:
                 system.getMatterSubsystem().calcSystemMassCenterLocationInGround(state);
         Vec3 COM_v = system.getMatterSubsystem().calcSystemMassCenterVelocityInGround(state);
 	double totEne=system.calcEnergy(state);
-//	cout<<"ccc:"<<_cont1.getRecordValues(state)<<endl;
-        //cout<< _fset.getSize()<<endl;
-        //cout<<"..."<<system.getMobilityForces(state,Stage::Dynamics)<<endl;
-    //for (int i=0;i<6;i++) 
-      //  cout<<system.getRigidBodyForces(state,Stage::Dynamics)(i)<<endl;
 
-
+        auto& cont1 = _model.getComponent<OpenSim::SmoothSphereHalfSpaceForce>(
+                  "tforce");
+        auto& fset=_model.getForceSet();
+        auto& controller=_model.getControllerSet()[0];
+        auto& tip=_model.getMarkerSet()[6];
+	//cout<<tip.getLocationInGround(state)<<endl;
 
 
         Vector q=state.getQ();
         Vector u=state.getU();
-        const Set<const Actuator>& ASet = _controller->getActuatorSet();
+        const Set<const Actuator>& ASet = controller.getActuatorSet();
         const DelpActuator* act1=dynamic_cast<const DelpActuator*>(&ASet[0]);
         const DelpActuator* act2=dynamic_cast<const DelpActuator*>(&ASet[1]);
         const DelpActuator* act3=dynamic_cast<const DelpActuator*>(&ASet[2]);
@@ -64,9 +61,9 @@ public:
 	double P4=act4->getPower(state);
 	double P5=act5->getPower(state);
 	double P6=act6->getPower(state);
-	 PathSpring* spK = dynamic_cast<PathSpring*>(&_fset.get(0));
-	 PathSpring* spH = dynamic_cast<PathSpring*>(&_fset.get(1));
-	 PathSpring* spA = dynamic_cast<PathSpring*>(&_fset.get(2));
+	 PathSpring* spK = dynamic_cast<PathSpring*>(&fset.get(0));
+	 PathSpring* spH = dynamic_cast<PathSpring*>(&fset.get(1));
+	 PathSpring* spA = dynamic_cast<PathSpring*>(&fset.get(2));
         double springTK=spK->getTension(state)*0.05;//torque knee
 	double spPK=spK->getLengtheningSpeed(state)*spK->getTension(state);//w*tou=Power
 	double spEK=0.5*spK->getStretch(state)*spK->getStretch(state)*
@@ -128,13 +125,15 @@ public:
 		spEA<<","<<spEK<<","<<spEH<<","<<
 	//	limPow1<<","<<limPow2<<","<<limPow3<<","<<limPow4<<","<<
 		comPos(1)<<","<<COM_v(0)<<","<<COM_v(1)<<
-		","<<totEne<<","<<_cont1.getRecordValues(state)[0]<<
-		","<<_cont1.getRecordValues(state)[1]<<endl;	      
+		","<<totEne<<","<<cont1.getRecordValues(state)[0]<<
+		","<<cont1.getRecordValues(state)[1]<<endl;	      
 //Array<double> f1=getModel().getComponent<Force>("tforce").getRecordValues(input.state);
 //Array<double> f2=getModel().getComponent<Force>("aforce").getRecordValues(input.state);
-        std::cout << state.getTime() <<":"<<_cont1.getRecordValues(state)[0]<<   
-		","<<_cont1.getRecordValues(state)[1]<<"\t,"<< comPos[1]<< "\t,"<<endl; 
-	//
+        std::cout << state.getTime() <<"f:"<<cont1.getRecordValues(state)[0]<<   
+		","<<cont1.getRecordValues(state)[1]<<",y:"<< comPos[1]<<",tip:"
+		<<tip.getLocationInGround(state)<<endl; 
+        
+        	
 	//	limf1->computePotentialEnergy(state)<<
 	//	","<< limf2->computePotentialEnergy(state)<<","
 	//	<< limf3->computePotentialEnergy(state)<<","
@@ -144,10 +143,7 @@ public:
 
 private:
     const MultibodySystem& system;
-    const PrescribedController* _controller;
-    const ForceSet& _fset;
-    const OpenSim::SmoothSphereHalfSpaceForce& _cont1;
-    const OpenSim::SmoothSphereHalfSpaceForce& _cont2;
+    const Model& _model;
 
 };
 ofstream fwddebugLog("results/fwd_debug.csv", ofstream::out);
@@ -162,7 +158,7 @@ int main(int argc, char *argv[]){
     Log4<<"t,ang,vel,E,tou,act,fac,opt,power,coord\n";
     Log5<<"t,ang,vel,E,tou,act,fac,opt,power,coord\n";
     Log6<<"t,ang,vel,E,tou,act,fac,opt,power,coord\n";
-    LogA<<"t,ang1,ang2,ang3,ang4,v1,v2,v3,v4,TA,TK,TH,TspA,TspK,TspH,PA,PK,PH,spPA,spPK,spPH,spEA,spEK,spEH,y,vx,vy,Fy?,totE\n";
+    LogA<<"t,ang1,ang2,ang3,ang4,v1,v2,v3,v4,TA,TK,TH,TspA,TspK,TspH,PA,PK,PH,spPA,spPK,spPH,spEA,spEK,spEH,y,vx,vy,totE,fx,fy\n";
     //LogA<<"t,ang1,ang2,ang3,ang4,v1,v2,v3,v4,T2,T3,T4,Tsp,P2,P3,P4,spP,limP1,limP2,limP3,limP4,y,vy\n";
 
 	for (int i=0;i<2;i++) 
@@ -239,7 +235,10 @@ int main(int argc, char *argv[]){
         auto& sp3=osimModel.updComponent<PathSpring>("/forceset/path_spring3");
         sp3.setStiffness(data.ints[4].val*4454.76);
 	int spnum3=round(sp3.getStiffness()/4454.76);
-        auto& fset=osimModel.updForceSet();
+        //auto& fset=osimModel.updForceSet();
+        auto& cont1 = osimModel.updComponent<OpenSim::SmoothSphereHalfSpaceForce>(
+                  "tforce");
+
 
 	ProbeReporter* probeReporter = new ProbeReporter(&osimModel);
     	osimModel.addAnalysis(probeReporter);
@@ -247,13 +246,9 @@ int main(int argc, char *argv[]){
     	osimModel.addAnalysis(forceReporter);
     	MuscleAnalysis* muscleReporter = new MuscleAnalysis(&osimModel);
     	osimModel.addAnalysis(muscleReporter);
-	auto& cont1 = osimModel.updComponent<OpenSim::SmoothSphereHalfSpaceForce>(
-                  "tforce");
-	auto& cont2 = osimModel.updComponent<OpenSim::SmoothSphereHalfSpaceForce>(
-                  "aforce");
 
 	const MultibodySystem& system=osimModel.updMultibodySystem();
-        system.addEventReporter(new MyReporter(system,.01,controller,fset,cont1,cont2));
+        system.addEventReporter(new MyReporter(system,.01,osimModel));
         State &osimState = osimModel.initializeState();
 	//set initial state from first line of statesfile
 	cout<<"apply first line of states...."<<endl;
@@ -265,16 +260,16 @@ int main(int argc, char *argv[]){
 
         double tf=time(time.nrow()-1);
 	cout<<"Endtime:"<<tf<<endl;
-	//system.realizeTopology();
+	system.realizeTopology();
         Manager manager(osimModel);
         si.getQ().dump("Initial q's");
         cout<<"read model from:"<< modelFile<<endl;
         //cout<<"read traj solutionfrom:"<< controlsFile <<endl;
         //cout<<"read initial state:"<< statesFile <<endl;
-        osimModel.getMultibodySystem();
-        cout<<__LINE__<<endl;
 try {
         manager.initialize(osimState);
+        system.realize(osimState, Stage::Position);
+        cout<<"tiploc:"<<osimModel.getMarkerSet()[6].getLocationInGround(osimState)<<endl;
         cout<<__LINE__<<endl;
 
         std::cout<<"Integrating from 0  to " << tf << std::endl;
@@ -291,8 +286,10 @@ try {
         SimTK::Vec3 comPos =
                 system.getMatterSubsystem().calcSystemMassCenterLocationInGround(manager.getState());
 
-        std::cout << manager.getState().getTime() << "\t," << forcesAtMInG[0][1][1] 
-		<< "\t,"<<comPos[1]<<  std::endl;
+        std::cout <<  manager.getState().getTime() <<":"<<
+		cont1.getRecordValues( manager.getState())[0]<<
+                ","<<cont1.getRecordValues( manager.getState())[1]<<"\t,"<< comPos[1]<<endl;
+
 
         cout<<"end integration at time:"<<manager.getState().getTime()<<endl;
 

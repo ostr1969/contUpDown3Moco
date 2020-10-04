@@ -25,10 +25,8 @@ ofstream LogA("results/fwd_AllTable.csv", ofstream::out);
 
 class MyReporter : public PeriodicEventReporter {
 public:
-    MyReporter(const MultibodySystem& system, Real interval,PrescribedController* controller
-                ,ForceSet& fset)
-            : PeriodicEventReporter(interval), system(system),_controller(controller),
-                _fset(fset) {}
+    MyReporter(const MultibodySystem& system, Real interval , Model& model)
+            : PeriodicEventReporter(interval), system(system), _model(model) {}
 
     // Show x-y position of the pendulum weight as a function of time.
     void handleEvent(const State& state) const override {
@@ -40,12 +38,17 @@ public:
         Vec3 COM_v = system.getMatterSubsystem().calcSystemMassCenterVelocityInGround(state);
 	double totEne=system.calcEnergy(state);
 
-
+        auto& cont1 = _model.getComponent<OpenSim::SmoothSphereHalfSpaceForce>(
+                  "tforce");
+        auto& fset=_model.getForceSet();
+        auto& controller=_model.getControllerSet()[0];
+        auto& tip=_model.getMarkerSet()[6];
+	//cout<<tip.getLocationInGround(state)<<endl;
 
 
         Vector q=state.getQ();
         Vector u=state.getU();
-        const Set<const Actuator>& ASet = _controller->getActuatorSet();
+        const Set<const Actuator>& ASet = controller.getActuatorSet();
         const DelpActuator* act1=dynamic_cast<const DelpActuator*>(&ASet[0]);
         const DelpActuator* act2=dynamic_cast<const DelpActuator*>(&ASet[1]);
         const DelpActuator* act3=dynamic_cast<const DelpActuator*>(&ASet[2]);
@@ -58,9 +61,9 @@ public:
 	double P4=act4->getPower(state);
 	double P5=act5->getPower(state);
 	double P6=act6->getPower(state);
-	 PathSpring* spK = dynamic_cast<PathSpring*>(&_fset.get(0));
-	 PathSpring* spH = dynamic_cast<PathSpring*>(&_fset.get(1));
-	 PathSpring* spA = dynamic_cast<PathSpring*>(&_fset.get(2));
+	 PathSpring* spK = dynamic_cast<PathSpring*>(&fset.get(0));
+	 PathSpring* spH = dynamic_cast<PathSpring*>(&fset.get(1));
+	 PathSpring* spA = dynamic_cast<PathSpring*>(&fset.get(2));
         double springTK=spK->getTension(state)*0.05;//torque knee
 	double spPK=spK->getLengtheningSpeed(state)*spK->getTension(state);//w*tou=Power
 	double spEK=0.5*spK->getStretch(state)*spK->getStretch(state)*
@@ -122,10 +125,15 @@ public:
 		spEA<<","<<spEK<<","<<spEH<<","<<
 	//	limPow1<<","<<limPow2<<","<<limPow3<<","<<limPow4<<","<<
 		comPos(1)<<","<<COM_v(0)<<","<<COM_v(1)<<
-		","<<totEne<<endl;	      
-        std::cout << state.getTime() <<   
-		"\t,"<< comPos(1)<< "\t,"<<endl; 
-	//
+		","<<totEne<<","<<cont1.getRecordValues(state)[0]<<
+		","<<cont1.getRecordValues(state)[1]<<endl;	      
+//Array<double> f1=getModel().getComponent<Force>("tforce").getRecordValues(input.state);
+//Array<double> f2=getModel().getComponent<Force>("aforce").getRecordValues(input.state);
+        std::cout << state.getTime() <<"f:"<<cont1.getRecordValues(state)[0]<<   
+		","<<cont1.getRecordValues(state)[1]<<",y:"<< comPos[1]<<",tip:"
+		<<tip.getLocationInGround(state)<<endl; 
+        
+        	
 	//	limf1->computePotentialEnergy(state)<<
 	//	","<< limf2->computePotentialEnergy(state)<<","
 	//	<< limf3->computePotentialEnergy(state)<<","
@@ -135,8 +143,7 @@ public:
 
 private:
     const MultibodySystem& system;
-    const PrescribedController* _controller;
-    const ForceSet& _fset;
+    const Model& _model;
 
 };
 ofstream fwddebugLog("results/fwd_debug.csv", ofstream::out);
@@ -167,14 +174,15 @@ int main(int argc, char *argv[]){
         //int len=row0.size();
 	//cout<<"moco springs(KHA):"<<row0(len-3)<<","<<row0(len-2)<<","<<row0(len-1)<<endl;
         //string controlsfile="mycolo_controls.sto";
-        //string statesFile="results/mycolo_states.bin";
+        string statesFile="results/mycolo_states.bin";
 	//string controlsFile="results/mycolo_controls.bin";
         //myTrajectory coloControls=binToTraj(controlsFile);
 	//cout<<"read conrols"<<endl;
-        //myTrajectory coloStates=binToTraj(statesFile);
-	//cout<<"read initial state"<<endl;
-        //Vector st=coloStates.getFirstRow();
-	//cout<<st<<endl;
+        myTrajectory coloStates=binToTraj(statesFile);
+	cout<<"read initial state"<<endl;
+        Vector st=coloStates.getFirstRow();
+        //st[2]=st[2]+0.02;
+	cout<<st<<endl;
         Model osimModel(modelFile);
         osimModel.updControllerSet().remove(0);
         osimModel.initSystem();
@@ -242,14 +250,14 @@ int main(int argc, char *argv[]){
     	osimModel.addAnalysis(muscleReporter);
 
 	const MultibodySystem& system=osimModel.updMultibodySystem();
-        system.addEventReporter(new MyReporter(system,.01,controller,fset));
+        system.addEventReporter(new MyReporter(system,.01,osimModel));
         State &osimState = osimModel.initializeState();
 	//set initial state from first line of statesfile
 	cout<<"apply first line of states...."<<endl;
 	//cout.precision(15);
-	// for (int i=0; i<coloStates.numcols;i++)
-	//{osimModel.setStateVariableValue(osimState,coloStates.labels[i],st[i]);
-        // cout<<coloStates.labels[i]<<":"<<st[i]<<endl;}
+	for (int i=0; i<coloStates.numcols;i++)
+	{osimModel.setStateVariableValue(osimState,coloStates.labels[i],st[i]);
+         cout<<coloStates.labels[i]<<":"<<st[i]<<endl;}
 	//cout<<"get end time from control file..."<<endl;
 
         double tf=timv(timv.nrow()-1);

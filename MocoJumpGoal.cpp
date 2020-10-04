@@ -28,7 +28,7 @@ using namespace std;
 
 
 void MocoJumpGoal::initializeOnModelImpl(const Model& model ) const {
-    setRequirements(1, 2);
+    setRequirements(1, 3);
     
 }
 
@@ -44,7 +44,7 @@ void MocoJumpGoal::calcIntegrandImpl(
 	 Array<double> f2=getModel().getComponent<Force>("aforce").getRecordValues(input.state);
      double f=f1[1];//+f2[1];
      double fn,t1,t2,k;
-    if (f>=100){
+    /*if (f>=100){
     t1=0;t2=5000;double y1=0,y2=5;
     k=std::max(0.,std::min(1.,(f-t1)/(t2-t1)));
     fn=k*k*(3-2*k)*(y2-y1)+y1;
@@ -56,29 +56,43 @@ void MocoJumpGoal::calcIntegrandImpl(
     //cout<<"f:"<<f<<" fn:"<<fn<<endl;
             }
     //
-    integrand = fn;
+    integrand = fn;*/
+    integrand = f>2?0:1;
 
 }
 
 
 void MocoJumpGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& cost) const {
-	 Vector_<SpatialVec>  forcesAtMInG;
-       SimTK::Real timeInitial = input.initial_state.getTime();
-        SimTK::Real timeFinal = input.final_state.getTime();
+	// Vector_<SpatialVec>  forcesAtMInG;
+       //SimTK::Real timeInitial = input.initial_state.getTime();
+       // SimTK::Real timeFinal = input.final_state.getTime();
         //SimTK::Vec3 comInitialV =
         //        model.calcMassCenterVelocity(input.initial_state);
         SimTK::Vec3 comFinalV =
                 getModel().calcMassCenterVelocity(input.final_state);
         SimTK::Vec3 comFinalP =
                 getModel().calcMassCenterPosition(input.final_state);
+        auto& tip=getModel().getMarkerSet()[6];
 
-    double t1=-1,t2=1,vy=comFinalV(1);
+    //double t1=-1,t2=1,
+    double vy=comFinalV(1);
+    //double k=std::max(0.,std::min(1.,(vy-t1)/(t2-t1)));
+    //double dirac=k*k*(3-2*k);
+    //cost[0]=-vy*vy/2./9.81*dirac-comFinalP(1);
+    cost[0]=-vy-comFinalP(1);//not necessery the hight, only highest v and h
+    double tipinitx=tip.getLocationInGround(input.initial_state)[0];
+    //Vec3 tipinitLoc=tip.getLocationInGround(input.initial_state);
+    //cout<<tip.getName()<<tipinitLoc<<"  ";
+    double tipMovx=tip.getLocationInGround(input.final_state)[0]-tipinitx;
+    //k=std::max(0.,std::min(1.,(tipMovx-t1)/(t2-t1)));
+    //dirac=k*k*(3-2*k);
+    cost[1]=tipMovx*tipMovx*100000;
+    double t1=-1,t2=1;
     double k=std::max(0.,std::min(1.,(vy-t1)/(t2-t1)));
     double dirac=k*k*(3-2*k);
-    cost[0]=-vy*vy/2./9.81*dirac-comFinalP(1);
-    cost[1]=input.integral;
-    //cout<<"cost1:"<<cost[1]<<" ";
+    cost[2] = input.integral*input.integral*100;
+    //cout<<"cost0:"<<cost[0]<<" cost1:"<<cost[1]<<" cost2:"<<cost[2]<<endl;
 
 /*	getModel().realizeAcceleration(input.final_state);
 	 getModel().getMultibodySystem().getMatterSubsystem().

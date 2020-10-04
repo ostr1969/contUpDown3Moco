@@ -181,11 +181,11 @@ int main() {
     problem.setStateInfo("/hm/activation", {-1,0},0, {-1,0});
 
     problem.setControlInfo("/ap", MocoBounds(0.,1. ));
-    problem.setControlInfo("/kp", MocoBounds(0.,1. ));
+    problem.setControlInfo("/kp", MocoBounds(0.,1. ),0);
     problem.setControlInfo("/hp", MocoBounds(0.,1. ));
-    problem.setControlInfo("/am", MocoBounds(-1.0,0. ));
+    problem.setControlInfo("/am", MocoBounds(-1.0,0. ),0);
     problem.setControlInfo("/km", MocoBounds(-1.0,0. ));
-    problem.setControlInfo("/hm", MocoBounds(-1.0,0. ));
+    problem.setControlInfo("/hm", MocoBounds(-1.0,0. ),0);
 MocoParameter p0;
 p0.setName("knee stiffness");
 p0.appendComponentPath("/forceset/path_spring1");
@@ -258,7 +258,8 @@ timSeriesToBinFile(controlTable,"results/mycolo_controls.bin");
     // Visualize.
     // ==========
     //study.visualize(solution);
-    //double fwdjump=fwdCheck(osimModel , solution );
+    double fwdjump=fwdCheck(osimModel , solution );
+    cout<<"fwdjump:"<<fwdjump<<endl;
  cout<<solution.getObjectiveTermByIndex(0)<<"\t"<<endl;
     //cout<<"got objective:"<<solution.getObjective()<<endl;
     cout<<"numsprings:"<<data.ints[3].val<<endl;
