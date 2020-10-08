@@ -2,31 +2,33 @@
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Analyses/ForceReporter.h>
-//#include <OpenSim/Actuators/DelpActuator.h>
-#include "DelpActuator.h"
+#include <OpenSim/Actuators/DelpActuator.h>
+//#include "DelpActuator.h"
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <Moco/osimMoco.h>
 #define MYFWD 1
 #include "additions.h"
 #include "myActuatorPowerProbe.cpp"
 #include "console.h"
+#include <iosfwd>
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 ofstream debugLog("results/fwd_debug.csv", ofstream::out);
-ofstream Log1("results/fwd_1Table.csv", ofstream::out);
+/*ofstream Log1("results/fwd_1Table.csv", ofstream::out);
 ofstream Log2("results/fwd_2Table.csv", ofstream::out);
 ofstream Log3("results/fwd_3Table.csv", ofstream::out);
 ofstream Log4("results/fwd_4Table.csv", ofstream::out);
 ofstream Log5("results/fwd_5Table.csv", ofstream::out);
-ofstream Log6("results/fwd_6Table.csv", ofstream::out);
-ofstream LogA("results/fwd_AllTable.csv", ofstream::out);
+ofstream Log6("results/fwd_6Table.csv", ofstream::out);*/
+ofstream AllRes("results/allres.csv", ofstream::app);
+//extern ofstream LogA;
 
 
 class MyReporter : public PeriodicEventReporter {
 public:
-    MyReporter(const MultibodySystem& system, Real interval , Model& model)
-            : PeriodicEventReporter(interval), system(system), _model(model) {}
+    MyReporter(const MultibodySystem& system, Real interval , Model& model,ofstream& LogA)
+            : PeriodicEventReporter(interval), system(system), _model(model),LogA(LogA) {}
 
     // Show x-y position of the pendulum weight as a function of time.
     void handleEvent(const State& state) const override {
@@ -55,12 +57,12 @@ public:
         const DelpActuator* act4=dynamic_cast<const DelpActuator*>(&ASet[3]);
         const DelpActuator* act5=dynamic_cast<const DelpActuator*>(&ASet[4]);
         const DelpActuator* act6=dynamic_cast<const DelpActuator*>(&ASet[5]);
-	double P1=act1->getPower(state);
-	double P2=act2->getPower(state);
-	double P3=act3->getPower(state);
-	double P4=act4->getPower(state);
-	double P5=act5->getPower(state);
-	double P6=act6->getPower(state);
+	double P1=act1->getPower(state),O1=act1->getDelpVars(state,3);
+	double P2=act2->getPower(state),O2=act2->getDelpVars(state,3);
+	double P3=act3->getPower(state),O3=act3->getDelpVars(state,3);
+	double P4=act4->getPower(state),O4=act4->getDelpVars(state,3);
+	double P5=act5->getPower(state),O5=act5->getDelpVars(state,3);
+	double P6=act6->getPower(state),O6=act6->getDelpVars(state,3);
 	 PathSpring* spK = dynamic_cast<PathSpring*>(&fset.get(0));
 	 PathSpring* spH = dynamic_cast<PathSpring*>(&fset.get(1));
 	 PathSpring* spA = dynamic_cast<PathSpring*>(&fset.get(2));
@@ -77,8 +79,19 @@ public:
 	double spPA=spA->getLengtheningSpeed(state)*spA->getTension(state);
 	double spEA=0.5*spA->getStretch(state)*spA->getStretch(state)*
 			spA->getStiffness();
-
-        Log1<< state.getTime()<<","<<q(1)<<","<<u(1)<<","<<act1->getControl(state)<<
+        double e1=act1->getControl(state),T1=act1->getDelpVars(state,0);
+        double e2=act2->getControl(state),T2=act2->getDelpVars(state,0);
+        double e3=act3->getControl(state),T3=act3->getDelpVars(state,0);
+        double e4=act4->getControl(state),T4=act4->getDelpVars(state,0);
+        double e5=act5->getControl(state),T5=act5->getDelpVars(state,0);
+        double e6=act6->getControl(state),T6=act6->getDelpVars(state,0);
+	double A1=act1->getDelpVars(state,1),F1=act1->getDelpVars(state,2); 
+	double A2=act2->getDelpVars(state,1),F2=act2->getDelpVars(state,2); 
+	double A3=act3->getDelpVars(state,1),F3=act3->getDelpVars(state,2); 
+	double A4=act4->getDelpVars(state,1),F4=act4->getDelpVars(state,2); 
+	double A5=act5->getDelpVars(state,1),F5=act5->getDelpVars(state,2); 
+	double A6=act6->getDelpVars(state,1),F6=act6->getDelpVars(state,2); 
+      /*  Log1<< state.getTime()<<","<<q(1)<<","<<u(1)<<","<<act1->getControl(state)<<
         ","<<act1->getDelpVars(state,0)<<","<<act1->getDelpVars(state,1)<<","
         <<act1->getDelpVars(state,2)<<","<<act1->getDelpVars(state,3)
         <<","<<P1<<","<<act1->get_coordinate()<<","<<springTA<<","<<spPA<<endl;
@@ -101,10 +114,10 @@ public:
         Log6<< state.getTime()<<","<<q(3)<<","<<u(3)<<","<<act6->getControl(state)<<
         ","<<act6->getDelpVars(state,0)<<","<<act6->getDelpVars(state,1)<<","
         <<act6->getDelpVars(state,2)<<","<<act6->getDelpVars(state,3)
-        <<","<<P6<<","<<act6->get_coordinate()<<endl;
-	double T1=act1->getDelpVars(state,0)+act4->getDelpVars(state,0);
-	double T2=act2->getDelpVars(state,0)+act5->getDelpVars(state,0);
-	double T3=act3->getDelpVars(state,0)+act6->getDelpVars(state,0);
+        <<","<<P6<<","<<act6->get_coordinate()<<endl;*/
+	double T14=act1->getDelpVars(state,0)+act4->getDelpVars(state,0);
+	double T25=act2->getDelpVars(state,0)+act5->getDelpVars(state,0);
+	double T36=act3->getDelpVars(state,0)+act6->getDelpVars(state,0);
 	 /*CoordinateLimitForce* limf1 = dynamic_cast<CoordinateLimitForce*>(&_fset.get(1));
 	 CoordinateLimitForce* limf2 = dynamic_cast<CoordinateLimitForce*>(&_fset.get(2));
 	 CoordinateLimitForce* limf3 = dynamic_cast<CoordinateLimitForce*>(&_fset.get(3));
@@ -118,7 +131,7 @@ public:
         LogA<<state.getTime()<<","<<
 	      q(0)<<","<<q(1)<<","<<q(2)<<","<<q(3)<<","<<
               u(0)<<","<<u(1)<<","<<u(2)<<","<<u(3)<<","<<
-	      T1<<","<<T2<<","<<T3<<","<<springTA<<","<<springTK<<","<<
+	      T14<<","<<T25<<","<<T36<<","<<springTA<<","<<springTK<<","<<
 	      springTH<<","<<
 	      P1+P4<<","<<P2+P5<<","<<P3+P6<<","<<
 		spPA<<","<<spPK<<","<<spPH<<","<<
@@ -126,7 +139,16 @@ public:
 	//	limPow1<<","<<limPow2<<","<<limPow3<<","<<limPow4<<","<<
 		comPos(1)<<","<<COM_v(0)<<","<<COM_v(1)<<
 		","<<totEne<<","<<cont1.getRecordValues(state)[0]<<
-		","<<cont1.getRecordValues(state)[1]<<endl;	      
+		","<<cont1.getRecordValues(state)[1]<<","
+		<<tip.getLocationInGround(state)[0]<<","<<
+		tip.getLocationInGround(state)[1]<<","<<
+		e1<<","<<e2<<","<<e3<<","<<e4<<","<<e5<<","<<e6<<","<<//exitation
+		T1<<","<<T2<<","<<T3<<","<<T4<<","<<T5<<","<<T6<<","<<//torque
+		A1<<","<<A2<<","<<A3<<","<<A4<<","<<A5<<","<<A6<<","<<//activation
+		F1<<","<<F2<<","<<F3<<","<<F4<<","<<F5<<","<<F6<<","<<//vel factor
+		O1<<","<<O2<<","<<O3<<","<<O4<<","<<O5<<","<<O6<<","<<//maximum avail force
+		P1<<","<<P2<<","<<P3<<","<<P4<<","<<P5<<","<<P6<<","<<//power
+		endl;	      
 //Array<double> f1=getModel().getComponent<Force>("tforce").getRecordValues(input.state);
 //Array<double> f2=getModel().getComponent<Force>("aforce").getRecordValues(input.state);
         std::cout << state.getTime() <<"f:"<<cont1.getRecordValues(state)[0]<<   
@@ -144,6 +166,7 @@ public:
 private:
     const MultibodySystem& system;
     const Model& _model;
+    ofstream& LogA; 
 
 };
 ofstream fwddebugLog("results/fwd_debug.csv", ofstream::out);
@@ -152,14 +175,12 @@ ofstream fwddebugLog("results/fwd_debug.csv", ofstream::out);
 //
 int main(int argc, char *argv[]){
 	InpVars data=readvars();
-    Log1<<"t,ang,vel,E,tou,act,fac,opt,power,coord,spT,spP\n";
-    Log2<<"t,ang,vel,E,tou,act,fac,opt,power,coord,spT,spP\n";
-    Log3<<"t,ang,vel,E,tou,act,fac,opt,power,coord,spT,spP\n";
-    Log4<<"t,ang,vel,E,tou,act,fac,opt,power,coord\n";
-    Log5<<"t,ang,vel,E,tou,act,fac,opt,power,coord\n";
-    Log6<<"t,ang,vel,E,tou,act,fac,opt,power,coord\n";
-    LogA<<"t,ang1,ang2,ang3,ang4,v1,v2,v3,v4,TA,TK,TH,TspA,TspK,TspH,PA,PK,PH,spPA,spPK,spPH,spEA,spEK,spEH,y,vx,vy,totE,fx,fy\n";
-    //LogA<<"t,ang1,ang2,ang3,ang4,v1,v2,v3,v4,T2,T3,T4,Tsp,P2,P3,P4,spP,limP1,limP2,limP3,limP4,y,vy\n";
+ //   Log1<<"t,ang,vel,E,tou,act,fac,opt,power,coord,spT,spP\n";
+ //   Log2<<"t,ang,vel,E,tou,act,fac,opt,power,coord,spT,spP\n";
+ //   Log3<<"t,ang,vel,E,tou,act,fac,opt,power,coord,spT,spP\n";
+ //   Log4<<"t,ang,vel,E,tou,act,fac,opt,power,coord\n";
+ //   Log5<<"t,ang,vel,E,tou,act,fac,opt,power,coord\n";
+ //   Log6<<"t,ang,vel,E,tou,act,fac,opt,power,coord\n";
 
 	for (int i=0;i<2;i++) 
 		cout<<data.ints[i].label<<":"<<data.ints[i].val<<endl;	
@@ -168,14 +189,25 @@ int main(int argc, char *argv[]){
 	for (int i=0;i<data.doubles.size();i++) 
 		cout<<data.doubles[i].label<<":"<<data.doubles[i].val<<endl;	
 	string modelFile="con3springs.osim";
-	string mocofile="results/mycolo_traj.sto";
+	string mocofile="results/colo_traj.sto";
         TimeSeriesTable mocoTable(mocofile);
+        const char* sp1s=mocoTable.updTableMetaData().
+			getValueForKey(data.ints[3].label).getValue<std::string>().c_str();
+        const char* sp2s=mocoTable.updTableMetaData().
+			getValueForKey(data.ints[4].label).getValue<std::string>().c_str();
+        const char* sp3s=mocoTable.updTableMetaData().
+			getValueForKey(data.ints[5].label).getValue<std::string>().c_str();
+        char filn[80]="results/fwd_AllTable";
+        strcat(filn,sp1s);strcat(filn,".");strcat(filn,sp2s);strcat(filn,".");
+        strcat(filn,sp3s);strcat(filn,".csv");
+         puts(filn);
+	ofstream LogA(filn, ofstream::out);
         //RowVectorView row0=mocoTable.getRowAtIndex(0);
         //int len=row0.size();
 	//cout<<"moco springs(KHA):"<<row0(len-3)<<","<<row0(len-2)<<","<<row0(len-1)<<endl;
-        string controlsfile="mycolo_controls.sto";
-        string statesFile="results/mycolo_states.bin";
-	string controlsFile="results/mycolo_controls.bin";
+        string controlsfile="colo_controls.sto";
+        string statesFile="results/colo_states.bin";
+	string controlsFile="results/colo_controls.bin";
         myTrajectory coloControls=binToTraj(controlsFile);
 	cout<<"read conrols"<<endl;
         myTrajectory coloStates=binToTraj(statesFile);
@@ -185,6 +217,8 @@ int main(int argc, char *argv[]){
         Model osimModel(modelFile);
         osimModel.updControllerSet().remove(0);
         osimModel.initSystem();
+        LogA<<modelFile<<endl<<"initial:"<<st<<endl;
+        LogA<<"accurancy:"<<data.doubles[2].val<<", divisions:"<<data.ints[1].val<<endl;
     OpenSim::Array<std::string> actuNames;
     const auto modelPath = osimModel.getAbsolutePath();
     for (const auto& actu : osimModel.getComponentList<DelpActuator>()) {
@@ -227,15 +261,16 @@ int main(int argc, char *argv[]){
         State &si = osimModel.initSystem();
 // 1=knee 2=hip 3=ankle
         auto& sp1=osimModel.updComponent<PathSpring>("/forceset/path_spring1");
-        sp1.setStiffness(data.ints[4].val*4454.76);
+        sp1.setStiffness(atof(sp1s)*4454.76);
 	int spnum1=round(sp1.getStiffness()/4454.76);
         auto& sp2=osimModel.updComponent<PathSpring>("/forceset/path_spring2");
-        sp2.setStiffness(data.ints[4].val*4454.76);
+        sp2.setStiffness(atof(sp2s)*4454.76);
 	int spnum2=round(sp2.getStiffness()/4454.76);
         auto& sp3=osimModel.updComponent<PathSpring>("/forceset/path_spring3");
-        sp3.setStiffness(data.ints[4].val*4454.76);
+        sp3.setStiffness(atof(sp3s)*4454.76);
 	int spnum3=round(sp3.getStiffness()/4454.76);
         //auto& fset=osimModel.updForceSet();
+        LogA<<"springs:"<<spnum1<<","<<spnum2<<","<<spnum3<<endl;
         auto& cont1 = osimModel.updComponent<OpenSim::SmoothSphereHalfSpaceForce>(
                   "tforce");
 
@@ -248,7 +283,7 @@ int main(int argc, char *argv[]){
     	osimModel.addAnalysis(muscleReporter);
 
 	const MultibodySystem& system=osimModel.updMultibodySystem();
-        system.addEventReporter(new MyReporter(system,.01,osimModel));
+        system.addEventReporter(new MyReporter(system,.01,osimModel,LogA));
         State &osimState = osimModel.initializeState();
 	//set initial state from first line of statesfile
 	cout<<"apply first line of states...."<<endl;
@@ -278,8 +313,14 @@ try {
 	//manager.setIntegratorMinimumStepSize(.015);
 	manager.setIntegratorMaximumStepSize(tf/500);
         osimModel.print("results/fwd_integ.osim");
+    LogA<<"t,ang1,ang2,ang3,ang4,v1,v2,v3,v4,TA,TK,TH,TspA,TspK,TspH,PA,PK,PH,";
+    LogA<<"spPA,spPK,spPH,spEA,spEK,spEH,y,vx,vy,totE,fx,fy,tipx,tipy,";
+    LogA<<"e1,e2,e3,e4,e5,e6,T1,T2,T3,T4,T5,T6,a1,a2,a3,a4,a5,a6,f1,f2,f3,f4,f5,f6,";
+    LogA<<"o1,o2,o3,o4,o5,o6,P1,P2,P3,P4,P5,P6\n";
 
         manager.integrate(tf);
+        auto lastline=MyReporter(system,.01,osimModel,LogA);
+              lastline.handleEvent(manager.getState());
         Vector_<SpatialVec>  forcesAtMInG;
         system.realize(manager.getState(), Stage::Acceleration);
         system.getMatterSubsystem().calcMobilizerReactionForces(manager.getState(),forcesAtMInG);
@@ -320,15 +361,20 @@ try {
         //forceReporter->getForceStorage().print("results/fwd0_forces.sto");
 
         //cout.precision(15);
-        cout<<"num of springs:[KHA]"<<spnum1<<","<<spnum2<<","<<spnum3<<endl;
 	cout<<"pos:"<<COM_position<<" vel:"<<COM_velocity<<" mass:"<<sysMass<<endl;
-	cout<<"jump:"<<maxHeight<<endl;
+	//cout<<"jump:"<<maxHeight<<endl;
+        cout<<"num of springs:[KHA]"<<spnum1<<","<<spnum2<<","<<spnum3<<
+		",           jump:"<<maxHeight<<endl;
+        AllRes<<"2,"<<spnum1<<","<<spnum2<<","<<spnum3<<","<<maxHeight<<endl;
 }
     catch (const std::exception& ex)
     {
         std::cout << "Exception in 4links_example: " << ex.what() << std::endl;
         return 1;
     }
+AllRes.close();
+LogA.close();
+debugLog.close();
 
                 
 

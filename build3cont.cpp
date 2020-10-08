@@ -23,7 +23,7 @@
 #include "additions.h"
 //#include "myActuatorPowerProbe.cpp"
 #include "myForceSet.cpp"
-#include "DelpActuator.h"
+//#include "DelpActuator.h"
 using std::string;
 #define MAXN 1000
 using namespace OpenSim;

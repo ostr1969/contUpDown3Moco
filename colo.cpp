@@ -21,8 +21,8 @@
 #include <chrono>
 #include <unistd.h>
 #include <OpenSim/OpenSim.h>
-//#include <OpenSim/Actuators/DelpActuator.h>
-#include "DelpActuator.h"
+#include <OpenSim/Actuators/DelpActuator.h>
+//#include "DelpActuator.h"
 #include <OpenSim/Common/PiecewiseConstantFunction.h>
 #include <Moco/osimMoco.h>
 //#include <Moco/Components/ActivationCoordinateActuator.h>
@@ -33,10 +33,11 @@
 //#include "readdelp.h"
 #include "additions.h"
 #include "MocoJumpGoal.h"
-
+//#include "MocoTrajectory.h"
 using namespace OpenSim;
 using namespace SimTK;
 using std::chrono::system_clock;
+ofstream AllRes("results/allres.csv", ofstream::app);
 
     double qi0L,qi0H,qi1L,qi1H,qi2L,qi2H,qi3L,qi3H;
     double q0L,q0H,q1L,q1H,q2L,q2H,q3L,q3H;
@@ -223,7 +224,7 @@ p2.setBounds(massBounds2);
  //MocoTropterSolver& solver=study.initTropterSolver();
     solver.set_num_mesh_intervals(data.ints[1].val);
     //solver.set_verbosity(2);
-    cout<<data.strings[1].val<<endl;
+    //cout<<data.strings[1].val<<endl;
     solver.set_optim_finite_difference_scheme(data.strings[1].val);
     solver.set_optim_solver("ipopt");
     solver.set_optim_max_iterations(data.ints[0].val);
@@ -233,24 +234,34 @@ p2.setBounds(massBounds2);
 
 
     // Now that we've finished setting up the tool, print it to a file.
-    study.print("results/mycolo.omoco");
+    study.print("results/colo.omoco");
     //solver.setGuessFile("guess_traj.sto");
     // Solve the problem.
     // ==================
     //usleep(2000000); 
+    cout<<"NOW SOLVING\n";
     MocoSolution solution = study.solve();
     //solution.unseal();
     debugLog<<"got objective:"<<solution.getObjective()<<endl;
 	//solution.resampleWithNumTimes(50);
-    solution.write("results/mycolo_traj.sto");
+    //solution.setParameter(data.ints[3].label,data.ints[3].val );
+    //solution.write("results/mycolo_traj.sto");
+    TimeSeriesTable ts=solution.convertToTable();
+    ts.updTableMetaData().setValueForKey(data.ints[3].label,
+		std::to_string(data.ints[3].val) );
+    ts.updTableMetaData().setValueForKey(data.ints[4].label,
+		std::to_string(data.ints[4].val) );
+    ts.updTableMetaData().setValueForKey(data.ints[5].label,
+		std::to_string(data.ints[5].val) );
+    STOFileAdapter::write(ts, "results/colo_traj.sto");
     TimeSeriesTable statesTable=solution.exportToStatesTable();
-timSeriesToBinFile(statesTable,"results/mycolo_states.bin");
+timSeriesToBinFile(statesTable,"results/colo_states.bin");
    // Storage statestorage=solution.exportToStatesStorage();
-    STOFileAdapter::write(statesTable, "results/mycolo_states.sto");
+    STOFileAdapter::write(statesTable, "results/colo_states.sto");
     TimeSeriesTable controlTable=solution.exportToControlsTable();
-    STOFileAdapter::write(controlTable, "results/mycolo_controls.sto");
+    STOFileAdapter::write(controlTable, "results/colo_controls.sto");
 
-timSeriesToBinFile(controlTable,"results/mycolo_controls.bin");
+timSeriesToBinFile(controlTable,"results/colo_controls.bin");
 
 
     //solution.resampleWithNumTimes(1300);
@@ -259,10 +270,12 @@ timSeriesToBinFile(controlTable,"results/mycolo_controls.bin");
     // ==========
     //study.visualize(solution);
     double fwdjump=fwdCheck(osimModel , solution );
-    cout<<"fwdjump:"<<fwdjump<<endl;
+    //cout<<"fwdjump:"<<fwdjump<<endl;
  cout<<solution.getObjectiveTermByIndex(0)<<"\t"<<endl;
     //cout<<"got objective:"<<solution.getObjective()<<endl;
-    cout<<"numsprings:"<<data.ints[3].val<<endl;
+    cout<<"numsprings[KHA]:"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val
+	<<"         fwdjump:"<<fwdjump<<endl;
+    AllRes<<"1,"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val<<","<<fwdjump<<endl;
     //cout<<"echo "<<data.ints[3].val<<","<<solution.getObjectiveTermByIndex(0)<<","<<fwdjump<<
 //	">>results/all.csv"<<endl;
     //cout<<"ankle stiffness:"<<solution.getParameter("ankle stiffness")<<endl;

@@ -2,8 +2,8 @@
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Analyses/ForceReporter.h>
-//#include <OpenSim/Actuators/DelpActuator.h>
-#include "DelpActuator.h"
+#include <OpenSim/Actuators/DelpActuator.h>
+//#include "DelpActuator.h"
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <Moco/osimMoco.h>
 #define MYFWD 1

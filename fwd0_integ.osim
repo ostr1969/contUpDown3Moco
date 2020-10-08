@@ -335,7 +335,7 @@
 				<!--Path to a Component that satisfies the Socket 'half_space' of type ContactHalfSpace (description: The half-space participating in this contact.).-->
 				<socket_half_space>/floor</socket_half_space>
 				<!--The stiffness constant (i.e., plain strain modulus), default is 1 (N/m^2)-->
-				<stiffness>6067776</stiffness>
+				<stiffness>60677760</stiffness>
 				<!--The dissipation coefficient, default is 0 (s/m).-->
 				<dissipation>2</dissipation>
 				<!--The coefficient of static friction, default is 0.-->
