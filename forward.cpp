@@ -189,7 +189,7 @@ int main(int argc, char *argv[]){
 	for (int i=0;i<data.doubles.size();i++) 
 		cout<<data.doubles[i].label<<":"<<data.doubles[i].val<<endl;	
 	string modelFile="con3springs.osim";
-	string mocofile="results/colo_traj.sto";
+	string mocofile="results/lasttraj.sto";
         TimeSeriesTable mocoTable(mocofile);
         const char* sp1s=mocoTable.updTableMetaData().
 			getValueForKey(data.ints[3].label).getValue<std::string>().c_str();

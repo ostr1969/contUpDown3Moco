@@ -18,7 +18,6 @@
 
 
 //#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <chrono>
 #include <unistd.h>
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Actuators/DelpActuator.h>
@@ -161,9 +160,9 @@ int main() {
 		data.doubles[3].val, data.doubles[0].val));
 
     // Initial position must be 0, final position must be 1.
-    problem.setStateInfo("/jointset/PelvisToGround/pelvis_rot/value", {-60*Pi/180,10*Pi/180}, pelrot);
-    problem.setStateInfo("/jointset/PelvisToGround/pelvis_mov_x/value", {-0.1,0.1}, pelx);
-    problem.setStateInfo("/jointset/PelvisToGround/pelvis_mov_y/value", {0.3,1.3},pely);
+    problem.setStateInfo("/jointset/PelvisToGround/pelvis_rot/value", {-70*Pi/180,10*Pi/180}, pelrot);
+    problem.setStateInfo("/jointset/PelvisToGround/pelvis_mov_x/value", {-0.35,0.35}, pelx);
+    problem.setStateInfo("/jointset/PelvisToGround/pelvis_mov_y/value", {0.3,1.90},pely);
     problem.setStateInfo("/jointset/ankle/q1_rot/value", MocoBounds(q1L,q1H),
                          MocoInitialBounds(q1), MocoFinalBounds(q1L,q1H));
     problem.setStateInfo("/jointset/knee/q2_rot/value",  {q2L,q2H}, q2, {q2L,q2H});
@@ -172,7 +171,7 @@ int main() {
     // Initial and final speed must be 0. Use compact syntax.
     double v=20.;
     problem.setStateInfoPattern("/jointset/.*rot.*/speed", {-v, v}, 0, {});
-    problem.setStateInfoPattern("/jointset/.*mov.*/speed", {-3, 3}, 0, {});
+    problem.setStateInfoPattern("/jointset/.*mov.*/speed", {-4, 4}, 0, {});
     //
     problem.setStateInfo("/ap/activation", {0, 1},0, {0,1});
     problem.setStateInfo("/kp/activation", {0, 1},0, {0,1});
@@ -235,25 +234,43 @@ p2.setBounds(massBounds2);
 
     // Now that we've finished setting up the tool, print it to a file.
     study.print("results/colo.omoco");
+    if (data.ints[9].val==1)
+       solver.setGuessFile(data.strings[2].val);
+
     //solver.setGuessFile("guess_traj.sto");
     // Solve the problem.
     // ==================
     //usleep(2000000); 
     cout<<"NOW SOLVING\n";
     MocoSolution solution = study.solve();
+    if (solution.isSealed()){
+        cout<<"*********DID NOT CONVERGED*********\n";
+	return 0;}
     //solution.unseal();
     debugLog<<"got objective:"<<solution.getObjective()<<endl;
 	//solution.resampleWithNumTimes(50);
     //solution.setParameter(data.ints[3].label,data.ints[3].val );
     //solution.write("results/mycolo_traj.sto");
+//    STOFileAdapter::write(ts, "results/colo_traj.sto");
+
+    string sp1s=to_string(data.ints[3].val);
+    string sp2s=to_string(data.ints[4].val);
+    string sp3s=to_string(data.ints[5].val);
     TimeSeriesTable ts=solution.convertToTable();
-    ts.updTableMetaData().setValueForKey(data.ints[3].label,
-		std::to_string(data.ints[3].val) );
-    ts.updTableMetaData().setValueForKey(data.ints[4].label,
-		std::to_string(data.ints[4].val) );
-    ts.updTableMetaData().setValueForKey(data.ints[5].label,
-		std::to_string(data.ints[5].val) );
-    STOFileAdapter::write(ts, "results/colo_traj.sto");
+    ts.updTableMetaData().setValueForKey(data.ints[3].label,sp1s) ;
+    ts.updTableMetaData().setValueForKey(data.ints[4].label,sp2s) ;
+    ts.updTableMetaData().setValueForKey(data.ints[5].label,sp3s) ;
+    ts.updTableMetaData().setValueForKey(data.doubles[0].label,to_string(data.doubles[0].val)) ;
+    ts.updTableMetaData().setValueForKey(data.doubles[2].label,to_string(data.doubles[2].val)) ;
+    char filn[80]="results/traj";
+        strcat(filn,sp1s.c_str());strcat(filn,".");strcat(filn,sp2s.c_str());strcat(filn,".");
+        strcat(filn,sp3s.c_str());strcat(filn,".sto");
+
+    STOFileAdapter::write(ts, filn);
+    STOFileAdapter::write(ts, "results/lasttraj.sto");
+
+
+
     TimeSeriesTable statesTable=solution.exportToStatesTable();
 timSeriesToBinFile(statesTable,"results/colo_states.bin");
    // Storage statestorage=solution.exportToStatesStorage();
