@@ -21,8 +21,9 @@
 #include "OpenSim/Common/STOFileAdapter.h"
 #define BUILD 1
 #include "additions.h"
+#include "readx_y.h"
 //#include "myActuatorPowerProbe.cpp"
-#include "myForceSet.cpp"
+//#include "myForceSet.cpp"
 //#include "DelpActuator.h"
 using std::string;
 #define MAXN 1000
@@ -237,19 +238,42 @@ try
         ankle->updCoordinate().setName("q1_rot");
         knee->updCoordinate().setName("q2_rot");
         hip->updCoordinate().setName("q3_rot");
+	auto& coordSet = osimModel.updCoordinateSet();
+
+        double cx[40];
+        double cy[40];int sz;
+readx_y("src/delp1.txt",cx,cy,sz);SimmSpline flc1(sz, cx,cy);double ankleRange[2]={cx[0],cx[sz-1]};
+readx_y("src/delp2.txt",cx,cy,sz);SimmSpline flc2(sz, cx,cy);
+readx_y("src/delp3.txt",cx,cy,sz);SimmSpline flc3(sz, cx,cy);
+readx_y("src/delp4.txt",cx,cy,sz);SimmSpline flc4(sz, cx,cy);double kneeRange[2]={cx[0],cx[sz-1]};
+readx_y("src/delp5.txt",cx,cy,sz);SimmSpline flc5(sz, cx,cy);double hipRange[2]={cx[0],cx[sz-1]};
+readx_y("src/delp6.txt",cx,cy,sz);SimmSpline flc6(sz, cx,cy);
+        auto* a1=new DelpActuator("ap",16.,1,.011,.068,0.,"src/delp1.txt",&coordSet.get("q1_rot"));
+        auto* a2=new DelpActuator("kp",18.,1,.011,.068,0.,"src/delp4.txt",&coordSet.get("q2_rot"));
+        auto* a3=new DelpActuator("hp",20.,1,.011,.068,0.,"src/delp5.txt",&coordSet.get("q3_rot"));
+        auto* a_1=new DelpActuator("am",16.,-1,.011,.068,0.,"src/delp2.txt",&coordSet.get("q1_rot"));
+        auto* a_2=new DelpActuator("km",18.,-1,.011,.068,0.,"src/delp3.txt",&coordSet.get("q2_rot"));
+        auto* a_3=new DelpActuator("hm",20.,-1,.011,.068,0.,"src/delp6.txt",&coordSet.get("q3_rot"));
+        a1->setTorqueAngleCurve(flc1);a2->setTorqueAngleCurve(flc4);a3->setTorqueAngleCurve(flc5);
+        a_1->setTorqueAngleCurve(flc2);a_2->setTorqueAngleCurve(flc3);a_3->setTorqueAngleCurve(flc6);
+        cout<<":::"<<flc1.getXValues()[0]<<endl;
+        osimModel.addComponent(a1);
+        osimModel.addComponent(a2);
+        osimModel.addComponent(a3);
+        osimModel.addComponent(a_1);
+        osimModel.addComponent(a_2);
+        osimModel.addComponent(a_3);
         
         // define the simulation times
- 	DelpActuator* a1=addDelpActuator(osimModel, "q1_rot","ap","src/delp1.txt", 1,16);
- 	DelpActuator* a2=addDelpActuator(osimModel, "q2_rot","kp","src/delp4.txt", 1,18);
- 	DelpActuator* a3=addDelpActuator(osimModel, "q3_rot","hp","src/delp5.txt", 1,20);
- 	DelpActuator* a_1=addDelpActuator(osimModel, "q1_rot","am","src/delp2.txt", 1,16);
- 	DelpActuator* a_2=addDelpActuator(osimModel, "q2_rot","km","src/delp3.txt", 1,18);
- 	DelpActuator* a_3=addDelpActuator(osimModel, "q3_rot","hm","src/delp6.txt", 1,20);
-cout<<__LINE__<<endl;
+// 	DelpActuator* a1=addDelpActuator(osimModel, "q1_rot","ap","src/delp1.txt", 1,16);
+// 	DelpActuator* a2=addDelpActuator(osimModel, "q2_rot","kp","src/delp4.txt", 1,18);
+// 	DelpActuator* a3=addDelpActuator(osimModel, "q3_rot","hp","src/delp5.txt", 1,20);
+// 	DelpActuator* a_1=addDelpActuator(osimModel, "q1_rot","am","src/delp2.txt", 1,16);
+// 	DelpActuator* a_2=addDelpActuator(osimModel, "q2_rot","km","src/delp3.txt", 1,18);
+// 	DelpActuator* a_3=addDelpActuator(osimModel, "q3_rot","hm","src/delp6.txt", 1,20);
 
     
     Actuator &kp=osimModel.updComponent<DelpActuator>("kp") ; 
-cout<<__LINE__<<endl;
     //cout<<osimModel.updForceSet().updActuators().getSize()<<endl;   
     //osimModel.updForceSet().updActuators().adoptAndAppend(&kp);   
     //cout<<osimModel.updForceSet().updActuators().getSize()<<endl;   
@@ -278,9 +302,9 @@ cout<<__LINE__<<endl;
 
 
         double toeRange[2] = {0, Pi/2};
-        double ankleRange[2]={a1->getDelpLowAngle(),a1->getDelpHighAngle()};
-        double kneeRange[2] ={a2->getDelpLowAngle(),a2->getDelpHighAngle()} ;
-        double hipRange[2] ={a3->getDelpLowAngle(),a3->getDelpHighAngle()} ;
+       // double ankleRange[2]={a1->getDelpLowAngle(),a1->getDelpHighAngle()};
+       // double kneeRange[2] ={a2->getDelpLowAngle(),a2->getDelpHighAngle()} ;
+       // double hipRange[2] ={a3->getDelpLowAngle(),a3->getDelpHighAngle()} ;
         cout<<ankleRange[0]*180/Pi<<","<<ankleRange[1]*180/Pi<<endl;
         cout<<kneeRange[0]*180/Pi<<","<<kneeRange[1]*180/Pi<<endl;
         cout<<hipRange[0]*180/Pi<<","<<hipRange[1]*180/Pi<<endl;

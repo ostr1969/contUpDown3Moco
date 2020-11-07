@@ -22,7 +22,6 @@ ofstream Log4("results/fwd_4Table.csv", ofstream::out);
 ofstream Log5("results/fwd_5Table.csv", ofstream::out);
 ofstream Log6("results/fwd_6Table.csv", ofstream::out);*/
 ofstream AllRes("results/allres.csv", ofstream::app);
-//extern ofstream LogA;
 
 
 class MyReporter : public PeriodicEventReporter {

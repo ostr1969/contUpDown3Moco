@@ -57,7 +57,7 @@ void MocoJumpGoal::calcIntegrandImpl(
             }
     //
     integrand = fn;*/
-    integrand = f>2?0:1;
+    integrand = f>20?0:1;
 
 }
 

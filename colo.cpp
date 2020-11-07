@@ -45,6 +45,7 @@ Model buildmodel(){
 	Model osimModel(data.strings[0].val);
         cout<<"read src/cont3springs.osim"<<endl;
 	osimModel.buildSystem();
+	osimModel.initSystem();
         cout<<"built system"<<endl;
         // Pin joint initial states
         //CoordinateSet &coordinates = osimModel.updCoordinateSet();
@@ -173,11 +174,11 @@ int main() {
     problem.setStateInfoPattern("/jointset/.*rot.*/speed", {-v, v}, 0, {});
     problem.setStateInfoPattern("/jointset/.*mov.*/speed", {-4, 4}, 0, {});
     //
-    problem.setStateInfo("/ap/activation", {0, 1},0, {0,1});
+    problem.setStateInfo("/ap/activation", {0, 1},0.5, {0,1});
     problem.setStateInfo("/kp/activation", {0, 1},0, {0,1});
-    problem.setStateInfo("/hp/activation", {0, 1},0, {0,1});
+    problem.setStateInfo("/hp/activation", {0, 1},0.5, {0,1});
     problem.setStateInfo("/am/activation", {-1,0},0, {-1,0});
-    problem.setStateInfo("/km/activation", {-1,0},0, {-1,0});
+    problem.setStateInfo("/km/activation", {-1,0},-0.5, {-1,0});
     problem.setStateInfo("/hm/activation", {-1,0},0, {-1,0});
 
     problem.setControlInfo("/ap", MocoBounds(0.,1. ));
@@ -252,17 +253,45 @@ p2.setBounds(massBounds2);
     //solution.setParameter(data.ints[3].label,data.ints[3].val );
     //solution.write("results/mycolo_traj.sto");
 //    STOFileAdapter::write(ts, "results/colo_traj.sto");
-
+    string sp0s=to_string(data.ints[1].val);
     string sp1s=to_string(data.ints[3].val);
     string sp2s=to_string(data.ints[4].val);
     string sp3s=to_string(data.ints[5].val);
+   std::vector<std::string> contactSpheres_r;
+    std::vector<std::string> contactSpheres_l;
+    contactSpheres_r.push_back("aforce");
+    contactSpheres_r.push_back("tforce");
+    TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
+            osimModel, solution, contactSpheres_r, contactSpheres_r);
+    TimeSeriesTable statesTable=solution.exportToStatesTable();
+    STOFileAdapter::write(statesTable, "results/colo_states.sto");
+    TimeSeriesTable controlTable=solution.exportToControlsTable();
+    STOFileAdapter::write(controlTable, "results/colo_controls.sto");
+    writeTableToFile(externalForcesTableFlat, "results/colo_forces.sto");
+
+    char Gfiln[80]="results/GRF";
+        strcat(Gfiln,sp1s.c_str());strcat(Gfiln,".");strcat(Gfiln,sp2s.c_str());strcat(Gfiln,".");
+        strcat(Gfiln,sp3s.c_str());strcat(Gfiln,".sto");
+    writeTableToFile(externalForcesTableFlat, Gfiln);
+    AnalyzeTool("analyze.xml").run();
+    TimeSeriesTable posTable("Analyzes/contModel_BodyKinematics_pos_global.sto");
+    TimeSeriesTable velTable("Analyzes/contModel_BodyKinematics_vel_global.sto");
+
+    RowVectorView endpos=posTable.getNearestRow(10,false);
+    RowVectorView endvel=velTable.getNearestRow(10,false);//without the time
+    cout<<"endvel:"<<endvel[43]<<" endpos:"<<endpos[43]<<endl;
+    double jumphight=endpos[43]+endvel[43]*endvel[43]/2/9.81;
+
     TimeSeriesTable ts=solution.convertToTable();
+    ts.updTableMetaData().setValueForKey(data.ints[1].label,sp0s) ;
     ts.updTableMetaData().setValueForKey(data.ints[3].label,sp1s) ;
     ts.updTableMetaData().setValueForKey(data.ints[4].label,sp2s) ;
     ts.updTableMetaData().setValueForKey(data.ints[5].label,sp3s) ;
     ts.updTableMetaData().setValueForKey(data.doubles[0].label,to_string(data.doubles[0].val)) ;
     ts.updTableMetaData().setValueForKey(data.doubles[2].label,to_string(data.doubles[2].val)) ;
-    char filn[80]="results/traj";
+    ts.updTableMetaData().setValueForKey("jump",to_string(jumphight)) ;
+
+    char filn[80]="Analyzes/traj";
         strcat(filn,sp1s.c_str());strcat(filn,".");strcat(filn,sp2s.c_str());strcat(filn,".");
         strcat(filn,sp3s.c_str());strcat(filn,".sto");
 
@@ -271,13 +300,8 @@ p2.setBounds(massBounds2);
 
 
 
-    TimeSeriesTable statesTable=solution.exportToStatesTable();
-timSeriesToBinFile(statesTable,"results/colo_states.bin");
-   // Storage statestorage=solution.exportToStatesStorage();
-    STOFileAdapter::write(statesTable, "results/colo_states.sto");
-    TimeSeriesTable controlTable=solution.exportToControlsTable();
-    STOFileAdapter::write(controlTable, "results/colo_controls.sto");
 
+timSeriesToBinFile(statesTable,"results/colo_states.bin");
 timSeriesToBinFile(controlTable,"results/colo_controls.bin");
 
 
@@ -286,13 +310,13 @@ timSeriesToBinFile(controlTable,"results/colo_controls.bin");
     // Visualize.
     // ==========
     //study.visualize(solution);
-    double fwdjump=fwdCheck(osimModel , solution );
+//    double fwdjump=fwdCheck(osimModel , solution );
     //cout<<"fwdjump:"<<fwdjump<<endl;
  cout<<solution.getObjectiveTermByIndex(0)<<"\t"<<endl;
     //cout<<"got objective:"<<solution.getObjective()<<endl;
     cout<<"numsprings[KHA]:"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val
-	<<"         fwdjump:"<<fwdjump<<endl;
-    AllRes<<"1,"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val<<","<<fwdjump<<endl;
+	<<"         jump:"<<jumphight<<endl;
+    AllRes<<"1,"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val<<endl;
     //cout<<"echo "<<data.ints[3].val<<","<<solution.getObjectiveTermByIndex(0)<<","<<fwdjump<<
 //	">>results/all.csv"<<endl;
     //cout<<"ankle stiffness:"<<solution.getParameter("ankle stiffness")<<endl;

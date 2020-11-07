@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ForceSet name="forceset">
+  <objects>
+    <PathSpring name="path_spring1">
+      <!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
+      <GeometryPath name="geometrypath">
+        <!--The set of points defining the path-->
+        <PathPointSet>
+          <objects>
+            <PathPoint name="origin1">
+              <!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+              <socket_parent_frame>/bodyset/thigh</socket_parent_frame>
+              <!--The fixed location of the path point expressed in its parent frame.-->
+              <location>0.050000000000000003 0.20000000000000001 0</location>
+            </PathPoint>
+            <PathPoint name="insert1">
+              <!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+              <socket_parent_frame>/bodyset/shank</socket_parent_frame>
+              <!--The fixed location of the path point expressed in its parent frame.-->
+              <location>0.050000000000000003 0.21820000000000001 0</location>
+            </PathPoint>
+          </objects>
+          <groups/>
+        </PathPointSet>
+        <!--The wrap objects that are associated with this path-->
+        <PathWrapSet>
+          <objects>
+            <PathWrap name="pathwrap">
+              <!--A WrapObject that this PathWrap interacts with.-->
+              <wrap_object>wrap1</wrap_object>
+              <!--The wrapping method used to solve the path around the wrap object.-->
+              <method>hybrid</method>
+            </PathWrap>
+          </objects>
+          <groups/>
+        </PathWrapSet>
+        <!--Default appearance attributes for this GeometryPath-->
+        <Appearance>
+          <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+          <color>0 1 0</color>
+        </Appearance>
+      </GeometryPath>
+      <!--The resting length (m) of the PathSpring-->
+      <resting_length>0.40000000000000002</resting_length>
+      <!--The linear stiffness (N/m) of the PathSpring-->
+      <stiffness>0</stiffness>
+      <!--The dissipation factor (s/m) of the PathSpring-->
+      <dissipation>0.01</dissipation>
+    </PathSpring>
+    <PathSpring name="path_spring2">
+      <!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
+      <GeometryPath name="geometrypath">
+        <!--The set of points defining the path-->
+        <PathPointSet>
+          <objects>
+            <PathPoint name="origin2">
+              <!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+              <socket_parent_frame>/bodyset/HAT</socket_parent_frame>
+              <!--The fixed location of the path point expressed in its parent frame.-->
+              <location>-0.050000000000000003 0.20000000000000001 0</location>
+            </PathPoint>
+            <PathPoint name="insert2">
+              <!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+              <socket_parent_frame>/bodyset/thigh</socket_parent_frame>
+              <!--The fixed location of the path point expressed in its parent frame.-->
+              <location>-0.050000000000000003 0.21649999999999997 0</location>
+            </PathPoint>
+          </objects>
+          <groups/>
+        </PathPointSet>
+        <!--The wrap objects that are associated with this path-->
+        <PathWrapSet>
+          <objects>
+            <PathWrap name="pathwrap">
+              <!--A WrapObject that this PathWrap interacts with.-->
+              <wrap_object>wrap2</wrap_object>
+              <!--The wrapping method used to solve the path around the wrap object.-->
+              <method>hybrid</method>
+            </PathWrap>
+          </objects>
+          <groups/>
+        </PathWrapSet>
+        <!--Default appearance attributes for this GeometryPath-->
+        <Appearance>
+          <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+          <color>0 1 0</color>
+        </Appearance>
+      </GeometryPath>
+      <!--The resting length (m) of the PathSpring-->
+      <resting_length>0.40000000000000002</resting_length>
+      <!--The linear stiffness (N/m) of the PathSpring-->
+      <stiffness>0</stiffness>
+      <!--The dissipation factor (s/m) of the PathSpring-->
+      <dissipation>0.01</dissipation>
+    </PathSpring>
+    <PathSpring name="path_spring3">
+      <!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
+      <GeometryPath name="geometrypath">
+        <!--The set of points defining the path-->
+        <PathPointSet>
+          <objects>
+            <PathPoint name="origin3">
+              <!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+              <socket_parent_frame>/bodyset/shank</socket_parent_frame>
+              <!--The fixed location of the path point expressed in its parent frame.-->
+              <location>-0.050000000000000003 0.20000000000000001 0</location>
+            </PathPoint>
+            <PathPoint name="insert3">
+              <!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+              <socket_parent_frame>/bodyset/foot</socket_parent_frame>
+              <!--The fixed location of the path point expressed in its parent frame.-->
+              <location>-0.050000000000000003 0.1084 0</location>
+            </PathPoint>
+          </objects>
+          <groups/>
+        </PathPointSet>
+        <!--The wrap objects that are associated with this path-->
+        <PathWrapSet>
+          <objects>
+            <PathWrap name="pathwrap">
+              <!--A WrapObject that this PathWrap interacts with.-->
+              <wrap_object>wrap3</wrap_object>
+              <!--The wrapping method used to solve the path around the wrap object.-->
+              <method>hybrid</method>
+            </PathWrap>
+          </objects>
+          <groups/>
+        </PathWrapSet>
+        <!--Default appearance attributes for this GeometryPath-->
+        <Appearance>
+          <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+          <color>0 1 0</color>
+        </Appearance>
+      </GeometryPath>
+      <!--The resting length (m) of the PathSpring-->
+      <resting_length>0.29999999999999999</resting_length>
+      <!--The linear stiffness (N/m) of the PathSpring-->
+      <stiffness>0</stiffness>
+      <!--The dissipation factor (s/m) of the PathSpring-->
+      <dissipation>0.01</dissipation>
+    </PathSpring>
+  </objects>
+  <groups/>
+</ForceSet>
