@@ -14,7 +14,7 @@ d initial_q2 40
 d initial_q3 -20
 d initial_pelvis_rot -14
 d initial_pelvis_x 0
-d initial_pelvis_y 0.875
+d initial_pelvis_y 0.8632
 i num_of_springs_knee 0
 i num_of_springs_hip 0
 i num_of_springs_ankle 0

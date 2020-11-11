@@ -43,7 +43,7 @@ ofstream AllRes("results/allres.csv", ofstream::app);
     double q0,q1,q2,q3,pelrot,pelx,pely;
 Model buildmodel(){
 	Model osimModel(data.strings[0].val);
-        cout<<"read src/cont3springs.osim"<<endl;
+        cout<<data.strings[0].val<<endl;
 	osimModel.buildSystem();
 	osimModel.initSystem();
         cout<<"built system"<<endl;
@@ -166,7 +166,7 @@ int main() {
     problem.setStateInfo("/jointset/PelvisToGround/pelvis_mov_y/value", {0.3,1.90},pely);
     problem.setStateInfo("/jointset/ankle/q1_rot/value", MocoBounds(q1L,q1H),
                          MocoInitialBounds(q1), MocoFinalBounds(q1L,q1H));
-    problem.setStateInfo("/jointset/knee/q2_rot/value",  {q2L,q2H}, q2, {q2L,q2H});
+    problem.setStateInfo("/jointset/knee/q2_rot/value",  {2*Pi/180,q2H}, q2, {2*Pi/180,q2H});
     problem.setStateInfo("/jointset/hip/q3_rot/value",   {q3L,q3H}, q3, {q3L,q3H});
 
     // Initial and final speed must be 0. Use compact syntax.
@@ -174,11 +174,11 @@ int main() {
     problem.setStateInfoPattern("/jointset/.*rot.*/speed", {-v, v}, 0, {});
     problem.setStateInfoPattern("/jointset/.*mov.*/speed", {-4, 4}, 0, {});
     //
-    problem.setStateInfo("/ap/activation", {0, 1},0.5, {0,1});
+    problem.setStateInfo("/ap/activation", {0, 1},1.0, {0,1});
     problem.setStateInfo("/kp/activation", {0, 1},0, {0,1});
-    problem.setStateInfo("/hp/activation", {0, 1},0.5, {0,1});
+    problem.setStateInfo("/hp/activation", {0, 1},1.0, {0,1});
     problem.setStateInfo("/am/activation", {-1,0},0, {-1,0});
-    problem.setStateInfo("/km/activation", {-1,0},-0.5, {-1,0});
+    problem.setStateInfo("/km/activation", {-1,0},-1.0, {-1,0});
     problem.setStateInfo("/hm/activation", {-1,0},0, {-1,0});
 
     problem.setControlInfo("/ap", MocoBounds(0.,1. ));
@@ -274,8 +274,8 @@ p2.setBounds(massBounds2);
         strcat(Gfiln,sp3s.c_str());strcat(Gfiln,".sto");
     writeTableToFile(externalForcesTableFlat, Gfiln);
     AnalyzeTool("analyze.xml").run();
-    TimeSeriesTable posTable("Analyzes/contModel_BodyKinematics_pos_global.sto");
-    TimeSeriesTable velTable("Analyzes/contModel_BodyKinematics_vel_global.sto");
+    TimeSeriesTable posTable("results/contModel_BodyKinematics_pos_global.sto");
+    TimeSeriesTable velTable("results/contModel_BodyKinematics_vel_global.sto");
 
     RowVectorView endpos=posTable.getNearestRow(10,false);
     RowVectorView endvel=velTable.getNearestRow(10,false);//without the time
