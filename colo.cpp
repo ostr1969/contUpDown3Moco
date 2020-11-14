@@ -174,11 +174,11 @@ int main() {
     problem.setStateInfoPattern("/jointset/.*rot.*/speed", {-v, v}, 0, {});
     problem.setStateInfoPattern("/jointset/.*mov.*/speed", {-4, 4}, 0, {});
     //
-    problem.setStateInfo("/ap/activation", {0, 1},1.0, {0,1});
+    problem.setStateInfo("/ap/activation", {0, 1},0.0, {0,1});
     problem.setStateInfo("/kp/activation", {0, 1},0, {0,1});
-    problem.setStateInfo("/hp/activation", {0, 1},1.0, {0,1});
+    problem.setStateInfo("/hp/activation", {0, 1},0.0, {0,1});
     problem.setStateInfo("/am/activation", {-1,0},0, {-1,0});
-    problem.setStateInfo("/km/activation", {-1,0},-1.0, {-1,0});
+    problem.setStateInfo("/km/activation", {-1,0},-0.0, {-1,0});
     problem.setStateInfo("/hm/activation", {-1,0},0, {-1,0});
 
     problem.setControlInfo("/ap", MocoBounds(0.,1. ));
@@ -187,11 +187,12 @@ int main() {
     problem.setControlInfo("/am", MocoBounds(-1.0,0. ),0);
     problem.setControlInfo("/km", MocoBounds(-1.0,0. ));
     problem.setControlInfo("/hm", MocoBounds(-1.0,0. ),0);
+
 MocoParameter p0;
 p0.setName("knee stiffness");
 p0.appendComponentPath("/forceset/path_spring1");
 p0.setPropertyName("stiffness");
-MocoBounds massBounds(00000, data.ints[6].val*4454.);
+MocoBounds massBounds(00000, data.ints[6].val*4454.76);
 p0.setBounds(massBounds);
 //problem.addParameter(p0);
 
@@ -199,7 +200,7 @@ MocoParameter p1;
 p1.setName("hip stiffness");
 p1.appendComponentPath("/forceset/path_spring2");
 p1.setPropertyName("stiffness");
-MocoBounds massBounds1(00000,  data.ints[7].val*4454.);
+MocoBounds massBounds1(00000,  data.ints[7].val*4454.76);
 p1.setBounds(massBounds1);
 //problem.addParameter(p1);
 
@@ -207,9 +208,17 @@ MocoParameter p2;
 p2.setName("ankle stiffness");
 p2.appendComponentPath("/forceset/path_spring3");
 p2.setPropertyName("stiffness");
-MocoBounds massBounds2(00000,  data.ints[8].val*4454.);
+MocoBounds massBounds2(00000,  data.ints[8].val*4454.76);
 p2.setBounds(massBounds2);
 //problem.addParameter(p2);
+int parRun=0;
+if ( data.ints[6].val>0 or  data.ints[7].val or  data.ints[8].val>0)
+{problem.addParameter(p0);
+problem.addParameter(p1);
+problem.addParameter(p2);
+parRun=1;
+}
+
     // Cost.
     // -----
     //problem.addGoal<MocoFinalTimeGoal>();
@@ -245,7 +254,8 @@ p2.setBounds(massBounds2);
     cout<<"NOW SOLVING\n";
     MocoSolution solution = study.solve();
     if (solution.isSealed()){
-        cout<<"*********DID NOT CONVERGED*********\n";
+        cout<<"******DID NOT CONVERGED****"<<data.ints[3].val<<","<<data.ints[4].val<<
+		","<<data.ints[5].val<<endl;
 	return 0;}
     //solution.unseal();
     debugLog<<"got objective:"<<solution.getObjective()<<endl;
@@ -270,6 +280,16 @@ p2.setBounds(massBounds2);
     writeTableToFile(externalForcesTableFlat, "results/colo_forces.sto");
 
     char Gfiln[80]="results/GRF";
+    char filn[80]="Analyzes/traj";
+    if (parRun){
+	    sp1s=to_string(data.ints[6].val);
+	    sp2s=to_string(data.ints[7].val);
+	    sp3s=to_string(data.ints[8].val);
+	    string temp="results/AGRF";
+	    strcpy(Gfiln,temp.c_str());
+	    temp="Analyzes/Atraj";
+	    strcpy(filn,temp.c_str());
+    }
         strcat(Gfiln,sp1s.c_str());strcat(Gfiln,".");strcat(Gfiln,sp2s.c_str());strcat(Gfiln,".");
         strcat(Gfiln,sp3s.c_str());strcat(Gfiln,".sto");
     writeTableToFile(externalForcesTableFlat, Gfiln);
@@ -284,25 +304,24 @@ p2.setBounds(massBounds2);
 
     TimeSeriesTable ts=solution.convertToTable();
     ts.updTableMetaData().setValueForKey(data.ints[1].label,sp0s) ;
-    ts.updTableMetaData().setValueForKey(data.ints[3].label,sp1s) ;
-    ts.updTableMetaData().setValueForKey(data.ints[4].label,sp2s) ;
-    ts.updTableMetaData().setValueForKey(data.ints[5].label,sp3s) ;
+    ts.updTableMetaData().setValueForKey(data.ints[6].label,sp1s) ;
+    ts.updTableMetaData().setValueForKey(data.ints[7].label,sp2s) ;
+    ts.updTableMetaData().setValueForKey(data.ints[8].label,sp3s) ;
     ts.updTableMetaData().setValueForKey(data.doubles[0].label,to_string(data.doubles[0].val)) ;
     ts.updTableMetaData().setValueForKey(data.doubles[2].label,to_string(data.doubles[2].val)) ;
     ts.updTableMetaData().setValueForKey("jump",to_string(jumphight)) ;
 
-    char filn[80]="Analyzes/traj";
         strcat(filn,sp1s.c_str());strcat(filn,".");strcat(filn,sp2s.c_str());strcat(filn,".");
         strcat(filn,sp3s.c_str());strcat(filn,".sto");
 
     STOFileAdapter::write(ts, filn);
-    STOFileAdapter::write(ts, "results/lasttraj.sto");
+  //  STOFileAdapter::write(ts, "results/lasttraj.sto");
 
 
 
 
-timSeriesToBinFile(statesTable,"results/colo_states.bin");
-timSeriesToBinFile(controlTable,"results/colo_controls.bin");
+//timSeriesToBinFile(statesTable,"results/colo_states.bin");
+//timSeriesToBinFile(controlTable,"results/colo_controls.bin");
 
 
     //solution.resampleWithNumTimes(1300);
@@ -316,6 +335,10 @@ timSeriesToBinFile(controlTable,"results/colo_controls.bin");
     //cout<<"got objective:"<<solution.getObjective()<<endl;
     cout<<"numsprings[KHA]:"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val
 	<<"         jump:"<<jumphight<<endl;
+    if (parRun)
+	cout<<"MaxSprings[KHA]:"<<data.ints[6].val<<","<<data.ints[7].val<<","<<data.ints[8].val
+	              <<endl;
+
     AllRes<<"1,"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val<<endl;
     //cout<<"echo "<<data.ints[3].val<<","<<solution.getObjectiveTermByIndex(0)<<","<<fwdjump<<
 //	">>results/all.csv"<<endl;
