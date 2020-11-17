@@ -187,12 +187,12 @@ int main() {
     problem.setControlInfo("/am", MocoBounds(-1.0,0. ),0);
     problem.setControlInfo("/km", MocoBounds(-1.0,0. ));
     problem.setControlInfo("/hm", MocoBounds(-1.0,0. ),0);
-
+double st=4454.76;
 MocoParameter p0;
 p0.setName("knee stiffness");
 p0.appendComponentPath("/forceset/path_spring1");
 p0.setPropertyName("stiffness");
-MocoBounds massBounds(00000, data.ints[6].val*4454.76);
+MocoBounds massBounds(8*st, data.ints[6].val*st);
 p0.setBounds(massBounds);
 //problem.addParameter(p0);
 
@@ -200,7 +200,7 @@ MocoParameter p1;
 p1.setName("hip stiffness");
 p1.appendComponentPath("/forceset/path_spring2");
 p1.setPropertyName("stiffness");
-MocoBounds massBounds1(00000,  data.ints[7].val*4454.76);
+MocoBounds massBounds1(8*st,  data.ints[7].val*st);
 p1.setBounds(massBounds1);
 //problem.addParameter(p1);
 
@@ -208,11 +208,11 @@ MocoParameter p2;
 p2.setName("ankle stiffness");
 p2.appendComponentPath("/forceset/path_spring3");
 p2.setPropertyName("stiffness");
-MocoBounds massBounds2(00000,  data.ints[8].val*4454.76);
+MocoBounds massBounds2(8*st,  data.ints[8].val*st);
 p2.setBounds(massBounds2);
 //problem.addParameter(p2);
 int parRun=0;
-if ( data.ints[6].val>0 or  data.ints[7].val or  data.ints[8].val>0)
+if ( data.ints[6].val>0 or  data.ints[7].val>0 or  data.ints[8].val>0)
 {problem.addParameter(p0);
 problem.addParameter(p1);
 problem.addParameter(p2);
@@ -304,9 +304,15 @@ parRun=1;
 
     TimeSeriesTable ts=solution.convertToTable();
     ts.updTableMetaData().setValueForKey(data.ints[1].label,sp0s) ;
+    if (parRun){
     ts.updTableMetaData().setValueForKey(data.ints[6].label,sp1s) ;
     ts.updTableMetaData().setValueForKey(data.ints[7].label,sp2s) ;
-    ts.updTableMetaData().setValueForKey(data.ints[8].label,sp3s) ;
+    ts.updTableMetaData().setValueForKey(data.ints[8].label,sp3s) ;}
+    else {
+    ts.updTableMetaData().setValueForKey(data.ints[3].label,sp1s) ;
+    ts.updTableMetaData().setValueForKey(data.ints[4].label,sp2s) ;
+    ts.updTableMetaData().setValueForKey(data.ints[5].label,sp3s) ;}
+
     ts.updTableMetaData().setValueForKey(data.doubles[0].label,to_string(data.doubles[0].val)) ;
     ts.updTableMetaData().setValueForKey(data.doubles[2].label,to_string(data.doubles[2].val)) ;
     ts.updTableMetaData().setValueForKey("jump",to_string(jumphight)) ;

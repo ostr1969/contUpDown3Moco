@@ -1,8 +1,8 @@
 i iterations 9000
-i timediv 80
+i timediv 150
 s modelfile con3springs.osim
 s finite_difference_scheme forward
-s guessfile Analyzes/Atraj0.20.20.sto
+s guessfile Analyzes/Atraj12.12.12.sto
 d timemax 1.0
 d optimalforce 300.
 d converance_tolerance 1e-2
@@ -15,10 +15,10 @@ d initial_q3 -43.203
 d initial_pelvis_rot -38.174
 d initial_pelvis_x 0
 d initial_pelvis_y 0.865
-i num_of_springs_knee 12
-i num_of_springs_hip 12
-i num_of_springs_ankle 12
-i max_num_of_springs_knee 0
-i max_num_of_springs_hip 0 
-i max_num_of_springs_ankle 0 
+i num_of_springs_knee 0 
+i num_of_springs_hip 0 
+i num_of_springs_ankle 0 
+i max_num_of_springs_knee 16
+i max_num_of_springs_hip 16
+i max_num_of_springs_ankle 16
 i readGuessfile 0
