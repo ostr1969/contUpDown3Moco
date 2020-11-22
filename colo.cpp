@@ -192,7 +192,7 @@ MocoParameter p0;
 p0.setName("knee stiffness");
 p0.appendComponentPath("/forceset/path_spring1");
 p0.setPropertyName("stiffness");
-MocoBounds massBounds(8*st, data.ints[6].val*st);
+MocoBounds massBounds(0*st, data.ints[6].val*st);
 p0.setBounds(massBounds);
 //problem.addParameter(p0);
 
@@ -200,7 +200,7 @@ MocoParameter p1;
 p1.setName("hip stiffness");
 p1.appendComponentPath("/forceset/path_spring2");
 p1.setPropertyName("stiffness");
-MocoBounds massBounds1(8*st,  data.ints[7].val*st);
+MocoBounds massBounds1(0*st,  data.ints[7].val*st);
 p1.setBounds(massBounds1);
 //problem.addParameter(p1);
 
@@ -208,7 +208,7 @@ MocoParameter p2;
 p2.setName("ankle stiffness");
 p2.appendComponentPath("/forceset/path_spring3");
 p2.setPropertyName("stiffness");
-MocoBounds massBounds2(8*st,  data.ints[8].val*st);
+MocoBounds massBounds2(0*st,  data.ints[8].val*st);
 p2.setBounds(massBounds2);
 //problem.addParameter(p2);
 int parRun=0;
@@ -252,7 +252,7 @@ parRun=1;
     // ==================
     //usleep(2000000); 
     cout<<"NOW SOLVING\n";
-    MocoSolution solution = study.solve();
+	MocoSolution solution = study.solve();
     if (solution.isSealed()){
         cout<<"******DID NOT CONVERGED****"<<data.ints[3].val<<","<<data.ints[4].val<<
 		","<<data.ints[5].val<<endl;
