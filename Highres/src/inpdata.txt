@@ -16,10 +16,10 @@ d initial_pelvis_rot -38.174
 d initial_pelvis_x 0
 d initial_pelvis_y 0.865
 d TorqueAt90 5
-i num_of_springs_knee 50
-i num_of_springs_hip 50
-i num_of_springs_ankle 0
-i max_num_of_springs_knee 0
-i max_num_of_springs_hip 0
-i max_num_of_springs_ankle 0
-i readGuessfile 1
+i num_of_springs_knee 11
+i num_of_springs_hip 11
+i num_of_springs_ankle 11 
+i max_num_of_springs_knee 18
+i max_num_of_springs_hip 18
+i max_num_of_springs_ankle 18
+i readGuessfile 0
