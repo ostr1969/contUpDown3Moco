@@ -109,10 +109,24 @@ Model buildmodel(){
         auto& itip=osimModel.getMarkerSet()[6];
         SimTK::Vec3 tipP=itip.getLocationInGround(si);
         SimTK::Vec3 comP = osimModel.calcMassCenterPosition(si);
-        comang=atan((comP[1]-tipP[1])/(comP[0]-tipP[0]));
+        comang=atan((comP[1]-tipP[1]+0.02)/(comP[0]-tipP[0]));
+	cout<<"pelrot1="<<pelrot*180/Pi<<endl;
+	if(comang>=Pi/2)
+        pelrot=pelrot-Pi/2+comang;
+	else if (comang>=0)
         pelrot=pelrot+Pi/2-comang;
+	else
+	pelrot=pelrot-(Pi/2+comang);
+
+	cout<<" conang="<<comang*180/Pi<<endl;
+	cout<<"pelrot2="<<pelrot*180/Pi<<endl;
         osimModel.updCoordinateSet()[0].setValue(si, pelrot, true);
         osimModel.updCoordinateSet()[0].setDefaultValue(pelrot);
+	//copute tip hight and fix it
+	tipP=itip.getLocationInGround(si);
+        pely=pely-tipP[1]+0.02;
+        coordinates[2].setDefaultValue(pely);
+
        //function to compute coordinate tous and forces fore state si
         auto compT=[&](int cind,double pel_y){
         coordinates[cind].setValue(si, (pel_y), true);
@@ -122,15 +136,15 @@ Model buildmodel(){
                 " tipx:"<<itip.getLocationInGround(si)[0]<<" torques:"<<init_tou<<endl;
         return init_tou;
         };
-
         //function to search pelvis y for 800N force
         auto grad=[&](double init,int coordind,int udotind){
-                double xf,y1,err=1,x0=init,x1=init*1.0001;
+                double xf,y1,err=1,x0=init,x1=init*0.99;
                 double y0=compT(coordind,x0)[udotind];
                 while (abs(err)>1e-4) {
                 y1=compT(coordind,x1)[udotind];
                 xf=x0-(x1-x0)*y0/(y1-y0);
                 err=compT(coordind,xf)[udotind];
+		c.log(x1,x0,y1,y0,xf,err);
                 x1=x0;y1=y0;x0=xf;y0=err;
                 }
                 return xf;
@@ -138,7 +152,7 @@ Model buildmodel(){
         //
            pely=grad(pely,2,2);
            coordinates[2].setDefaultValue(pely);
-           cout<<"final\n";
+           cout<<"final pely:"<<pely<<endl;
 	   Vector tous=compT(2,pely);
         auto& a1 = osimModel.updComponent<DelpActuator>(actuNames[0]);
         a1.setStateVariableValue(si, "activation",tous[5]/a1.getOptimalByCurrentAngle(si));	
@@ -268,7 +282,7 @@ MocoParameter p0;
 p0.setName("knee stiffness");
 p0.appendComponentPath("/forceset/path_spring1");
 p0.setPropertyName("stiffness");
-MocoBounds massBounds(0*st, data.ints[6].val*st);
+MocoBounds massBounds(data.ints[10].val*st, data.ints[6].val*st);
 p0.setBounds(massBounds);
 //problem.addParameter(p0);
 
@@ -276,7 +290,7 @@ MocoParameter p1;
 p1.setName("hip stiffness");
 p1.appendComponentPath("/forceset/path_spring2");
 p1.setPropertyName("stiffness");
-MocoBounds massBounds1(0*st,  data.ints[7].val*st);
+MocoBounds massBounds1(data.ints[11].val*st,  data.ints[7].val*st);
 p1.setBounds(massBounds1);
 //problem.addParameter(p1);
 
@@ -284,7 +298,7 @@ MocoParameter p2;
 p2.setName("ankle stiffness");
 p2.appendComponentPath("/forceset/path_spring3");
 p2.setPropertyName("stiffness");
-MocoBounds massBounds2(0*st,  data.ints[8].val*st);
+MocoBounds massBounds2(data.ints[12].val*st,  data.ints[8].val*st);
 p2.setBounds(massBounds2);
 //problem.addParameter(p2);
 int parRun=0;
