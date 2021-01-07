@@ -17,22 +17,16 @@
  * -------------------------------------------------------------------------- */
 
 
-//#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <unistd.h>
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Actuators/DelpActuator.h>
-//#include "DelpActuator.h"
 #include <OpenSim/Common/PiecewiseConstantFunction.h>
 #include <Moco/osimMoco.h>
-//#include <Moco/Components/ActivationCoordinateActuator.h>
 #include <Moco/MocoGoal/MocoGoal.h>
-//#include "ActivationCoordinateActuator.h"
 #include <OpenSim/Common/STOFileAdapter.h>
 #include "console.h"
-//#include "readdelp.h"
 #include "additions.h"
 #include "MocoJumpGoal.h"
-//#include "MocoTrajectory.h"
 using namespace OpenSim;
 using namespace SimTK;
 using std::chrono::system_clock;
@@ -41,12 +35,17 @@ ofstream AllRes("results/allres.csv", ofstream::app);
     double qi0L,qi0H,qi1L,qi1H,qi2L,qi2H,qi3L,qi3H;
     double q0L,q0H,q1L,q1H,q2L,q2H,q3L,q3H;
     double q0,q1,q2,q3,pelrot,pelx,pely;
+    double torqueAt90,kUnitSpring;
+    double init_a1,init_a2,init_a3;
 Model buildmodel(){
 	Model osimModel(data.strings[0].val);
         cout<<data.strings[0].val<<endl;
 	osimModel.buildSystem();
 	osimModel.initSystem();
         cout<<"built system"<<endl;
+	torqueAt90=data.doubles[11].val;
+	kUnitSpring=torqueAt90/.05/.05/Pi*2;//4454.76
+
         // Pin joint initial states
         //CoordinateSet &coordinates = osimModel.updCoordinateSet();
         //coordinates[0].set_default_value( q0);
@@ -54,12 +53,12 @@ Model buildmodel(){
         //coordinates[2].set_default_value( q2);
         //coordinates[3].set_default_value( q3);
         auto& sp1=osimModel.updComponent<PathSpring>("/forceset/path_spring1");
-        sp1.setStiffness(4454.76*data.ints[3].val);
+        sp1.setStiffness(kUnitSpring*data.ints[3].val);
         cout<<"numsprings:"<<data.ints[3].val<<endl;
         auto& sp2=osimModel.updComponent<PathSpring>("/forceset/path_spring2");
-        sp2.setStiffness(4454.76*data.ints[4].val);
+        sp2.setStiffness(kUnitSpring*data.ints[4].val);
         auto& sp3=osimModel.updComponent<PathSpring>("/forceset/path_spring3");
-        sp3.setStiffness(4454.76*data.ints[5].val);
+        sp3.setStiffness(kUnitSpring*data.ints[5].val);
 
 	OpenSim::Array<std::string> actuNames;
         for (const auto& actu : osimModel.getComponentList<DelpActuator>()) {
@@ -73,24 +72,105 @@ Model buildmodel(){
         updateDelpActuator(osimModel, actuNames[5],"src/delp6.txt",.011,.068,-1,20);
 //	const ControllerSet &controllerSet = osimModel.getControllerSet();
 	osimModel.updControllerSet().remove(0);
+	auto& actuA = osimModel.updComponent<DelpActuator>("am");
+	q1L=actuA.getDelpLowAngle();
+	q1H=actuA.getDelpHighAngle();
+	auto& actuK = osimModel.updComponent<DelpActuator>("km");
+	q2L=actuK.getDelpLowAngle();
+	q2H=actuK.getDelpHighAngle();
+	auto& actuH = osimModel.updComponent<DelpActuator>("hm");
+	q3L=actuH.getDelpLowAngle();
+	q3H=actuH.getDelpHighAngle();
 
         double allStiff = 10000, allDamping = 5., allTransition = 5.;
-         CoordinateLimitForce* toeLimitForce = new  CoordinateLimitForce("rot_q0", 85,
-        allStiff, 0, allStiff, allDamping, allTransition);
-         CoordinateLimitForce* ankleLimitForce = new  CoordinateLimitForce("rot_q1", q1H*180/Pi-5,
+        // CoordinateLimitForce* toeLimitForce = new  CoordinateLimitForce("rot_q0", 85,
+        //allStiff, 0, allStiff, allDamping, allTransition);
+	c.log("limits:",q1L,q1H,q2L,q2H,q3L,q3H);
+         CoordinateLimitForce* ankleLimitForce = new  CoordinateLimitForce("q1_rot", q1H*180/Pi-5,
         allStiff, q1L*180/Pi+5, allStiff, allDamping, allTransition);
-         CoordinateLimitForce* kneeLimitForce = new  CoordinateLimitForce("rot_q2", q2H*180/Pi-5,
+         CoordinateLimitForce* kneeLimitForce = new  CoordinateLimitForce("q2_rot", q2H*180/Pi-5,
         allStiff, q2L*180/Pi+5, allStiff, allDamping, allTransition);
-         CoordinateLimitForce* hipLimitForce = new  CoordinateLimitForce("rot_q3", q3H*180/Pi-5,
+         CoordinateLimitForce* hipLimitForce = new  CoordinateLimitForce("q3_rot", q3H*180/Pi-5,
         allStiff, q3L*180/Pi+5, allStiff, allDamping, allTransition);
         //osimModel.addForce(toeLimitForce);
-        //osimModel.addForce(ankleLimitForce);
-        //osimModel.addForce(kneeLimitForce);
-        //osimModel.addForce(hipLimitForce);
-        osimModel.updCoordinateSet()[2].setDefaultValue(0.86);
-
+        osimModel.addForce(ankleLimitForce);
+        osimModel.addForce(kneeLimitForce);
+        osimModel.addForce(hipLimitForce);
+        //c.log(pelrot*180/Pi,pelx,pely,q1*180/Pi,q2*180/Pi,q3*180/Pi);
+        CoordinateSet &coordinates = osimModel.updCoordinateSet();
+        coordinates[0].setDefaultValue(pelrot);
+        coordinates[1].setDefaultValue(pelx);
+        coordinates[2].setDefaultValue(pely);
+        coordinates[3].setDefaultValue(q1);
+        coordinates[4].setDefaultValue(q2);
+        coordinates[5].setDefaultValue(q3);
 	osimModel.buildSystem();
         State &si = osimModel.initializeState();
+	//comute the angle of the line com to tip and fix it
+        double comang;
+	Vector udot(6,0.);
+        auto& itip=osimModel.getMarkerSet()[6];
+        SimTK::Vec3 tipP=itip.getLocationInGround(si);
+        SimTK::Vec3 comP = osimModel.calcMassCenterPosition(si);
+        comang=atan((comP[1]-tipP[1]+0.02)/(comP[0]-tipP[0]));
+	cout<<"pelrot1="<<pelrot*180/Pi<<endl;
+	if(comang>=Pi/2)
+        pelrot=pelrot-Pi/2+comang;
+	else if (comang>=0)
+        pelrot=pelrot+Pi/2-comang;
+	else
+	pelrot=pelrot-(Pi/2+comang);
+
+	cout<<" conang="<<comang*180/Pi<<endl;
+	cout<<"pelrot2="<<pelrot*180/Pi<<endl;
+        osimModel.updCoordinateSet()[0].setValue(si, pelrot, true);
+        osimModel.updCoordinateSet()[0].setDefaultValue(pelrot);
+	//copute tip hight and fix it
+	tipP=itip.getLocationInGround(si);
+        pely=pely-tipP[1]+0.02;
+        coordinates[2].setDefaultValue(pely);
+        c.log("coords:",pelrot,pelx,pely,q1,q2,q3);
+
+       //function to compute coordinate tous and forces fore state si
+        auto compT=[&](int cind,double pel_y){
+        coordinates[cind].setValue(si, (pel_y), true);
+        InverseDynamicsSolver insol(osimModel);
+        Vector init_tou=insol.solve(si,udot);
+        cout<<"COMx:"<<osimModel.calcMassCenterPosition(si)[0]<<
+                " tipx:"<<itip.getLocationInGround(si)[0]<<" torques:"<<init_tou<<endl;
+        return init_tou;
+        };
+        //function to search pelvis y for 800N force
+        auto grad=[&](double init,int coordind,int udotind){
+                double xf,y1,err=1,x0=init,x1=init*0.99;
+                double y0=compT(coordind,x0)[udotind];
+                while (abs(err)>1e-4) {
+                y1=compT(coordind,x1)[udotind];
+                xf=x0-(x1-x0)*y0/(y1-y0);
+                err=compT(coordind,xf)[udotind];
+		c.log(x1,x0,y1,y0,xf,err);
+                x1=x0;y1=y0;x0=xf;y0=err;
+                }
+                return xf;
+        };
+        //
+           pely=grad(pely,2,2);
+           coordinates[2].setDefaultValue(pely);
+           cout<<"final pely:"<<pely<<endl;
+	   Vector tous=compT(2,pely);
+        auto& a1 = osimModel.updComponent<DelpActuator>(actuNames[0]);
+        a1.setStateVariableValue(si, "activation",tous[5]/a1.getOptimalByCurrentAngle(si));	
+	init_a1=tous[5]/a1.getOptimalByCurrentAngle(si);
+        auto& a2 = osimModel.updComponent<DelpActuator>(actuNames[1]);
+        a2.setStateVariableValue(si, "activation",tous[4]/a2.getOptimalByCurrentAngle(si));	
+	init_a2=tous[4]/a2.getOptimalByCurrentAngle(si);
+        auto& a3 = osimModel.updComponent<DelpActuator>(actuNames[2]);
+        a3.setStateVariableValue(si, "activation",tous[3]/a3.getOptimalByCurrentAngle(si));	
+	init_a3=tous[3]/a3.getOptimalByCurrentAngle(si);
+	tous=compT(2,pely);
+        c.log("init_a:",init_a1,init_a2,init_a3);
+        if (init_a1<-1 or init_a2<-1 or init_a3<-1 or init_a1>1 or init_a2>1 or init_a3>1)
+			 exit(0); 
         si.getQ().dump("initial q");
 	//Vector stateInitVars(14,0.);
         //stateInitVars(6)=q0;stateInitVars(8)=q1;stateInitVars(10)=q2;stateInitVars(12)=q3;
@@ -109,16 +189,6 @@ Model buildmodel(){
 
         
 
-	q0L=30*Pi/180;q0H=90*Pi/180;
-	auto& actuA = osimModel.updComponent<DelpActuator>("am");
-	q1L=actuA.getDelpLowAngle();
-	q1H=actuA.getDelpHighAngle();
-	auto& actuK = osimModel.updComponent<DelpActuator>("km");
-	q2L=actuK.getDelpLowAngle();
-	q2H=actuK.getDelpHighAngle();
-	auto& actuH = osimModel.updComponent<DelpActuator>("hm");
-	q3L=actuH.getDelpLowAngle();
-	q3H=actuH.getDelpHighAngle();
         cout<<"qLimits:"<<endl<<q0L<<","<<q0H<<endl<<
 	q1L<<","<<q1H<<endl<<
 	q2L<<","<<q2H<<endl<<
@@ -173,26 +243,40 @@ int main() {
     double v=20.;
     problem.setStateInfoPattern("/jointset/.*rot.*/speed", {-v, v}, 0, {});
     problem.setStateInfoPattern("/jointset/.*mov.*/speed", {-4, 4}, 0, {});
-    //
-    problem.setStateInfo("/ap/activation", {0, 1},0.0, {0,1});
+    if (init_a1>=0) {
+    problem.setStateInfo("/ap/activation", {0, 1},init_a1, {0,1});
+    problem.setStateInfo("/am/activation", {-1,0},0, {-1,0});}
+    else {
+    problem.setStateInfo("/ap/activation", {0, 1},0, {0,1});
+    problem.setStateInfo("/am/activation", {-1,0},init_a1, {-1,0});}
+
+    if (init_a2>=0){
     problem.setStateInfo("/kp/activation", {0, 1},0, {0,1});
-    problem.setStateInfo("/hp/activation", {0, 1},0.0, {0,1});
-    problem.setStateInfo("/am/activation", {-1,0},0, {-1,0});
-    problem.setStateInfo("/km/activation", {-1,0},-0.0, {-1,0});
-    problem.setStateInfo("/hm/activation", {-1,0},0, {-1,0});
+    problem.setStateInfo("/km/activation", {-1,0},-init_a2, {-1,0});}
+    else{
+    problem.setStateInfo("/kp/activation", {0, 1},-init_a2, {0,1});
+    problem.setStateInfo("/km/activation", {-1,0},0, {-1,0});}
+
+    if (init_a3>=0){
+    problem.setStateInfo("/hp/activation", {0, 1},init_a3, {0,1});
+    problem.setStateInfo("/hm/activation", {-1,0},0, {-1,0});}
+    else{
+    problem.setStateInfo("/hp/activation", {0, 1},0, {0,1});
+    problem.setStateInfo("/hm/activation", {-1,0},init_a3, {-1,0});}
+
 
     problem.setControlInfo("/ap", MocoBounds(0.,1. ));
-    problem.setControlInfo("/kp", MocoBounds(0.,1. ),0);
+    problem.setControlInfo("/kp", MocoBounds(0.,1. ));
     problem.setControlInfo("/hp", MocoBounds(0.,1. ));
-    problem.setControlInfo("/am", MocoBounds(-1.0,0. ),0);
+    problem.setControlInfo("/am", MocoBounds(-1.0,0. ));
     problem.setControlInfo("/km", MocoBounds(-1.0,0. ));
-    problem.setControlInfo("/hm", MocoBounds(-1.0,0. ),0);
-double st=4454.76;
+    problem.setControlInfo("/hm", MocoBounds(-1.0,0. ));
+double st=kUnitSpring;
 MocoParameter p0;
 p0.setName("knee stiffness");
 p0.appendComponentPath("/forceset/path_spring1");
 p0.setPropertyName("stiffness");
-MocoBounds massBounds(0*st, data.ints[6].val*st);
+MocoBounds massBounds(data.ints[10].val*st, data.ints[6].val*st);
 p0.setBounds(massBounds);
 //problem.addParameter(p0);
 
@@ -200,7 +284,7 @@ MocoParameter p1;
 p1.setName("hip stiffness");
 p1.appendComponentPath("/forceset/path_spring2");
 p1.setPropertyName("stiffness");
-MocoBounds massBounds1(0*st,  data.ints[7].val*st);
+MocoBounds massBounds1(data.ints[11].val*st,  data.ints[7].val*st);
 p1.setBounds(massBounds1);
 //problem.addParameter(p1);
 
@@ -208,7 +292,7 @@ MocoParameter p2;
 p2.setName("ankle stiffness");
 p2.appendComponentPath("/forceset/path_spring3");
 p2.setPropertyName("stiffness");
-MocoBounds massBounds2(0*st,  data.ints[8].val*st);
+MocoBounds massBounds2(data.ints[12].val*st,  data.ints[8].val*st);
 p2.setBounds(massBounds2);
 //problem.addParameter(p2);
 int parRun=0;
@@ -315,6 +399,7 @@ parRun=1;
 
     ts.updTableMetaData().setValueForKey(data.doubles[0].label,to_string(data.doubles[0].val)) ;
     ts.updTableMetaData().setValueForKey(data.doubles[2].label,to_string(data.doubles[2].val)) ;
+    ts.updTableMetaData().setValueForKey(data.doubles[11].label,to_string(data.doubles[11].val)) ;
     ts.updTableMetaData().setValueForKey("jump",to_string(jumphight)) ;
 
         strcat(filn,sp1s.c_str());strcat(filn,".");strcat(filn,sp2s.c_str());strcat(filn,".");
@@ -335,8 +420,6 @@ parRun=1;
     // Visualize.
     // ==========
     //study.visualize(solution);
-//    double fwdjump=fwdCheck(osimModel , solution );
-    //cout<<"fwdjump:"<<fwdjump<<endl;
  cout<<solution.getObjectiveTermByIndex(0)<<"\t"<<endl;
     //cout<<"got objective:"<<solution.getObjective()<<endl;
     cout<<"numsprings[KHA]:"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val
@@ -346,8 +429,5 @@ parRun=1;
 	              <<endl;
 
     AllRes<<"1,"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val<<endl;
-    //cout<<"echo "<<data.ints[3].val<<","<<solution.getObjectiveTermByIndex(0)<<","<<fwdjump<<
-//	">>results/all.csv"<<endl;
-    //cout<<"ankle stiffness:"<<solution.getParameter("ankle stiffness")<<endl;
     return EXIT_SUCCESS;
 }

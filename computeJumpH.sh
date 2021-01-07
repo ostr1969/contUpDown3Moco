@@ -1,12 +1,13 @@
 #!/bin/bash
 #get knee hip ankle springs
 function onejump {
+unit=$(grep At90 $1 |cut -d"=" -f2)
 n1=$(echo $1|cut -dj -f2|cut -d. -f1)
 n2=$(echo $1|cut -dj -f2|cut -d. -f2)
 n3=$(echo $1|cut -dj -f2|cut -d. -f3)
-s1=$(bc <<<"scale=2;$n1*4454.76")
-s2=$(bc <<<"scale=2;$n2*4454.76")
-s3=$(bc <<<"scale=2;$n3*4454.76")
+s1=$(bc <<<"scale=5;$n1*$unit*2/3.1415/0.05/0.05")
+s2=$(bc <<<"scale=5;$n2*$unit*2/3.1415/0.05/0.05")
+s3=$(bc <<<"scale=5;$n3*$unit*2/3.1415/0.05/0.05")
 xmlstarlet ed -L -u  '//ForceSet/objects/PathSpring[@name="path_spring1"]/stiffness' -v  $s1 \
 	 -u '//ForceSet/objects/PathSpring[@name="path_spring2"]/stiffness' -v  $s2 \
 	  -u '//ForceSet/objects/PathSpring[@name="path_spring3"]/stiffness' -v  $s3 actuators.xml

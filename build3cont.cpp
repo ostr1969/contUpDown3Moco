@@ -265,13 +265,6 @@ readx_y("src/delp6.txt",cx,cy,sz);SimmSpline flc6(sz, cx,cy);
         osimModel.addComponent(a_3);
         
         // define the simulation times
-// 	DelpActuator* a1=addDelpActuator(osimModel, "q1_rot","ap","src/delp1.txt", 1,16);
-// 	DelpActuator* a2=addDelpActuator(osimModel, "q2_rot","kp","src/delp4.txt", 1,18);
-// 	DelpActuator* a3=addDelpActuator(osimModel, "q3_rot","hp","src/delp5.txt", 1,20);
-// 	DelpActuator* a_1=addDelpActuator(osimModel, "q1_rot","am","src/delp2.txt", 1,16);
-// 	DelpActuator* a_2=addDelpActuator(osimModel, "q2_rot","km","src/delp3.txt", 1,18);
-// 	DelpActuator* a_3=addDelpActuator(osimModel, "q3_rot","hm","src/delp6.txt", 1,20);
-
     
     Actuator &kp=osimModel.updComponent<DelpActuator>("kp") ; 
     //cout<<osimModel.updForceSet().updActuators().getSize()<<endl;   

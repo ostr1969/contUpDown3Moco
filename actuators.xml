@@ -1,6 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ForceSet name="forceset">
   <objects>
+    <CoordinateLimitForce name="q1_rot_LimitForce">
+      <!--Coordinate (name) to be limited.-->
+      <coordinate>q1_rot</coordinate>
+      <!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+      <upper_stiffness>10000</upper_stiffness>
+      <!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+      <upper_limit>-39.8815903534732</upper_limit>
+      <!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+      <lower_stiffness>10000</lower_stiffness>
+      <!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+      <lower_limit>-104.9638018332048</lower_limit>
+      <!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+      <damping>5</damping>
+      <!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+      <transition>5</transition>
+      <!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
+      <compute_dissipation_energy>false</compute_dissipation_energy>
+    </CoordinateLimitForce>
+    <CoordinateLimitForce name="q2_rot_LimitForce">
+      <!--Coordinate (name) to be limited.-->
+      <coordinate>q2_rot</coordinate>
+      <!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+      <upper_stiffness>10000</upper_stiffness>
+      <!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+      <upper_limit>135.00000270481564</upper_limit>
+      <!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+      <lower_stiffness>10000</lower_stiffness>
+      <!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+      <lower_limit>4.4716981114329046</lower_limit>
+      <!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+      <damping>5</damping>
+      <!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+      <transition>5</transition>
+      <!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
+      <compute_dissipation_energy>false</compute_dissipation_energy>
+    </CoordinateLimitForce>
+    <CoordinateLimitForce name="q3_rot_LimitForce">
+      <!--Coordinate (name) to be limited.-->
+      <coordinate>q3_rot</coordinate>
+      <!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
+      <upper_stiffness>10000</upper_stiffness>
+      <!--The upper limit of the coordinate range of motion (rotations in degrees).-->
+      <upper_limit>4.8165472104604738</upper_limit>
+      <!--Stiffness of the passive limit force when coordinate exceeds lower limit. Note, rotational stiffness expected in N*m/degree.-->
+      <lower_stiffness>10000</lower_stiffness>
+      <!--The lower limit of the coordinate range of motion (rotations in degrees).-->
+      <lower_limit>-115.04652403584464</lower_limit>
+      <!--Damping factor on the coordinate's speed applied only when limit is exceeded. For translational has units N/(m/s) and rotational has Nm/(degree/s)-->
+      <damping>5</damping>
+      <!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
+      <transition>5</transition>
+      <!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
+      <compute_dissipation_energy>false</compute_dissipation_energy>
+    </CoordinateLimitForce>
     <PathSpring name="path_spring1">
       <!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
       <GeometryPath name="geometrypath">
@@ -43,7 +97,7 @@
       <!--The resting length (m) of the PathSpring-->
       <resting_length>0.40000000000000002</resting_length>
       <!--The linear stiffness (N/m) of the PathSpring-->
-      <stiffness>17819.04</stiffness>
+      <stiffness>0</stiffness>
       <!--The dissipation factor (s/m) of the PathSpring-->
       <dissipation>0.01</dissipation>
     </PathSpring>
@@ -89,7 +143,7 @@
       <!--The resting length (m) of the PathSpring-->
       <resting_length>0.40000000000000002</resting_length>
       <!--The linear stiffness (N/m) of the PathSpring-->
-      <stiffness>17819.04</stiffness>
+      <stiffness>48384.52800</stiffness>
       <!--The dissipation factor (s/m) of the PathSpring-->
       <dissipation>0.01</dissipation>
     </PathSpring>
@@ -135,7 +189,7 @@
       <!--The resting length (m) of the PathSpring-->
       <resting_length>0.29999999999999999</resting_length>
       <!--The linear stiffness (N/m) of the PathSpring-->
-      <stiffness>17819.04</stiffness>
+      <stiffness>48384.52800</stiffness>
       <!--The dissipation factor (s/m) of the PathSpring-->
       <dissipation>0.01</dissipation>
     </PathSpring>
