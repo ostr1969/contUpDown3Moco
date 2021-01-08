@@ -57,7 +57,7 @@ try
         Vec3 linkageMassCenter2(0.,linkageLength2-0.18647538,0.);
         Vec3 linkageMassCenter3(0.,linkageLength3-0.17055675,0.);
         Vec3 linkageMassCenter4(0.,linkageLength4-0.4237,0.);
-        double exothick=0.025;
+        double exothick=0.015;
         Vec3 exocenter(0.,exothick/2,0.);
 
         OpenSim::Body* linkage1 = new OpenSim::Body("foot", linkageMass1,
@@ -73,16 +73,23 @@ try
         Rotation R = Rotation(-Pi/2, ZAxis); 
         // Graphical representation of foot.
         Sphere sphere(0.02);
+	Ellipsoid head(.15/2,.25/2,.15/2);
         //Sphere psphere(0.01);
         //psphere.upd_Appearance().set_color(SimTK::Vec3(1.0, 0.0, 0.0));
-        Cylinder exo(.04, exothick);
+        Cylinder exo(.05, exothick);
+	Brick brick(Vec3(.05/2, 0.01, .01));
+	
         Cylinder cyl1(linkageDiameter/2, linkageLength1/2);
         Frame* cyl1Frame = new PhysicalOffsetFrame(*linkage1, 
             Transform(Vec3(0.0, linkageLength1/2 , 0.0)));
         cyl1Frame->setName("Cyl1_frame");
         cyl1Frame->attachGeometry(cyl1.clone());
-        cyl1Frame->attachGeometry(exo.clone());
+        //cyl1Frame->attachGeometry(exo.clone());
         // cyl1Frame->attachGeometry(new Mesh("foot.vtp"));
+        Frame* b1Frame = new PhysicalOffsetFrame(*linkage1,
+            Transform(Vec3(-0.05/2, linkageLength1-.05, 0.)));
+	b1Frame->attachGeometry(brick.clone());
+        osimModel.addComponent(b1Frame);
         osimModel.addComponent(cyl1Frame);
 
         // Create shank body.
@@ -92,6 +99,11 @@ try
         cyl2Frame->setName("Cyl2_frame");
         cyl2Frame->attachGeometry(cyl2.clone());
         cyl2Frame->attachGeometry(exo.clone());
+
+        Frame* b2Frame = new PhysicalOffsetFrame(*linkage2,
+            Transform(Vec3(0.05/2, linkageLength2-.05, 0.)));
+	b2Frame->attachGeometry(brick.clone());
+        osimModel.addComponent(b2Frame);
         osimModel.addComponent(cyl2Frame);
         // Create thigh body.
         linkage3->attachGeometry(sphere.clone());
@@ -102,6 +114,10 @@ try
         cyl3Frame->attachGeometry(cyl3.clone());
         cyl3Frame->attachGeometry(exo.clone());
         //cyl3Frame->attachGeometry(new Mesh("femur_r.vtp"));
+        Frame* b3Frame = new PhysicalOffsetFrame(*linkage3,
+            Transform(Vec3(-0.05/2, linkageLength3-.05, 0.)));
+	b3Frame->attachGeometry(brick.clone());
+        osimModel.addComponent(b3Frame);
         osimModel.addComponent(cyl3Frame);
         // Create HAT body.
         linkage4->attachGeometry(sphere.clone());
@@ -110,10 +126,14 @@ try
             Transform(Vec3(0.0, linkageLength4 / 2.0, 0.0)));
         Frame* exo4Frame = new PhysicalOffsetFrame(*linkage4,
             Transform(Vec3(0.0, 0.2, 0.0)));
+        Frame* headFrame = new PhysicalOffsetFrame(*linkage4,
+            Transform(Vec3(0.0, linkageLength4, 0.0)));
+	headFrame->attachGeometry(head.clone());
         cyl4Frame->setName("Cyl4_frame");
         cyl4Frame->attachGeometry(cyl4.clone());
         exo4Frame->attachGeometry(exo.clone());
         osimModel.addComponent(cyl4Frame);
+        osimModel.addComponent(headFrame);
         osimModel.addComponent(exo4Frame);
 //create markers
 
@@ -337,7 +357,7 @@ cout<<__LINE__<<endl;
 //start wrap spring
 //      original length is 8 cm and stiffenes is 350N to each 8cm---for each spring
 //      350N/0.08m=4375
-	double pullymass=.001,resting_length=0.4,stiffness=4454.76*4.,dissipation=0.01;
+	double pullymass=.001,stiffness=4454.76*4.,dissipation=0.01;
 	double pullyrad=0.05,pullylength=0.05;
            // body that acts as the pulley that the path wraps over
 
@@ -376,27 +396,27 @@ cout<<__LINE__<<endl;
         osimModel.addJoint(weld1);
         osimModel.addJoint(weld2);
         osimModel.addJoint(weld3);
-
+	double resting_length=0.25;
     	PathSpring* spring1 =
-        new PathSpring("path_spring1",resting_length,stiffness ,dissipation);
+        new PathSpring("knee_spring",resting_length,stiffness ,dissipation);
     	spring1->updGeometryPath().
         appendNewPathPoint("origin1", *linkage3, Vec3(pullyrad, 0.2, 0));
     	spring1->updGeometryPath().
-        appendNewPathPoint("insert1", *linkage2, Vec3(pullyrad,linkageLength2-.2,0));
+        appendNewPathPoint("insert1", *linkage2, Vec3(pullyrad,linkageLength2-.05,0));
     	spring1->updGeometryPath().addPathWrap(*pulley1);
     	PathSpring* spring2 =
-        new PathSpring("path_spring2",resting_length,stiffness ,dissipation);
+        new PathSpring("hip_spring",resting_length,stiffness ,dissipation);
     	spring2->updGeometryPath().
         appendNewPathPoint("origin2", *linkage4, Vec3(-pullyrad, 0.2, 0));
     	spring2->updGeometryPath().
-        appendNewPathPoint("insert2", *linkage3, Vec3(-pullyrad,linkageLength3-.2,0));
+        appendNewPathPoint("insert2", *linkage3, Vec3(-pullyrad,linkageLength3-.05,0));
     	spring2->updGeometryPath().addPathWrap(*pulley2);
     	PathSpring* spring3 =
-        new PathSpring("path_spring3",0.3,stiffness ,dissipation);
+        new PathSpring("ankle_spring",resting_length,stiffness ,dissipation);
     	spring3->updGeometryPath().
         appendNewPathPoint("origin3", *linkage2, Vec3(-pullyrad, 0.2, 0));
     	spring3->updGeometryPath().
-        appendNewPathPoint("insert3", *linkage1, Vec3(-pullyrad,linkageLength1-.1,0));
+        appendNewPathPoint("insert3", *linkage1, Vec3(-pullyrad,linkageLength1-.05,0));
     	spring3->updGeometryPath().addPathWrap(*pulley3);
 cout<<__LINE__<<endl;
     	osimModel.addForce(spring1);

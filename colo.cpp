@@ -52,12 +52,12 @@ Model buildmodel(){
         //coordinates[1].set_default_value( q1);
         //coordinates[2].set_default_value( q2);
         //coordinates[3].set_default_value( q3);
-        auto& sp1=osimModel.updComponent<PathSpring>("/forceset/path_spring1");
+        auto& sp1=osimModel.updComponent<PathSpring>("/forceset/knee_spring");
         sp1.setStiffness(kUnitSpring*data.ints[3].val);
         cout<<"numsprings:"<<data.ints[3].val<<endl;
-        auto& sp2=osimModel.updComponent<PathSpring>("/forceset/path_spring2");
+        auto& sp2=osimModel.updComponent<PathSpring>("/forceset/hip_spring");
         sp2.setStiffness(kUnitSpring*data.ints[4].val);
-        auto& sp3=osimModel.updComponent<PathSpring>("/forceset/path_spring3");
+        auto& sp3=osimModel.updComponent<PathSpring>("/forceset/ankle_spring");
         sp3.setStiffness(kUnitSpring*data.ints[5].val);
 
 	OpenSim::Array<std::string> actuNames;
@@ -274,7 +274,7 @@ int main() {
 double st=kUnitSpring;
 MocoParameter p0;
 p0.setName("knee stiffness");
-p0.appendComponentPath("/forceset/path_spring1");
+p0.appendComponentPath("/forceset/knee_spring");
 p0.setPropertyName("stiffness");
 MocoBounds massBounds(data.ints[10].val*st, data.ints[6].val*st);
 p0.setBounds(massBounds);
@@ -282,7 +282,7 @@ p0.setBounds(massBounds);
 
 MocoParameter p1;
 p1.setName("hip stiffness");
-p1.appendComponentPath("/forceset/path_spring2");
+p1.appendComponentPath("/forceset/hip_spring");
 p1.setPropertyName("stiffness");
 MocoBounds massBounds1(data.ints[11].val*st,  data.ints[7].val*st);
 p1.setBounds(massBounds1);
@@ -290,7 +290,7 @@ p1.setBounds(massBounds1);
 
 MocoParameter p2;
 p2.setName("ankle stiffness");
-p2.appendComponentPath("/forceset/path_spring3");
+p2.appendComponentPath("/forceset/ankle_spring");
 p2.setPropertyName("stiffness");
 MocoBounds massBounds2(data.ints[12].val*st,  data.ints[8].val*st);
 p2.setBounds(massBounds2);
