@@ -11,11 +11,11 @@ s3=$(bc <<<"scale=5;$n3*$unit*2/3.1415/0.05/0.05")
 xmlstarlet ed -L -u  '//ForceSet/objects/PathSpring[@name="knee_spring"]/stiffness' -v  $s1 \
 	 -u '//ForceSet/objects/PathSpring[@name="hip_spring"]/stiffness' -v  $s2 \
 	  -u '//ForceSet/objects/PathSpring[@name="ankle_spring"]/stiffness' -v  $s3 actuators.xml
-sed -i  "s|Analyzes/traj.*sto|$1|g" analyze2.xml
+sed -i  "s|../Analyzes/traj.*sto|$1|g" analyze2.xml
 sed -i  "s|KHA[0-9\.]*|KHA$n1.$n2.$n3|g" analyze2.xml
  ~/MOCOBIN/opensim-core/bin/opensim-cmd run-tool ./analyze2.xml &>/dev/null
- ypos=$(tail -1 Analyzes/KHA$n1.$n2.${n3}_BodyKinematics_pos_global.sto |cut -f 45)
- yvel=$(tail -1 Analyzes/KHA$n1.$n2.${n3}_BodyKinematics_vel_global.sto |cut -f 45)
+ ypos=$(tail -1 ../Analyzes/KHA$n1.$n2.${n3}_BodyKinematics_pos_global.sto |cut -f 45)
+ yvel=$(tail -1 ../Analyzes/KHA$n1.$n2.${n3}_BodyKinematics_vel_global.sto |cut -f 45)
  read num1 num2 num3<<<${fil//[^0-9]/ }
  echo -ne $num1 $num2 $num3  " "
  python -c "print($ypos+$yvel*$yvel/2/9.81)"
@@ -24,8 +24,8 @@ function allreadyComputed {
 n1=$(echo $1|cut -dj -f2|cut -d. -f1)
 n2=$(echo $1|cut -dj -f2|cut -d. -f2)
 n3=$(echo $1|cut -dj -f2|cut -d. -f3)
-posfile=Analyzes/KHA$n1.$n2.${n3}_BodyKinematics_pos_global.sto
-velfile=Analyzes/KHA$n1.$n2.${n3}_BodyKinematics_vel_global.sto
+posfile=../Analyzes/KHA$n1.$n2.${n3}_BodyKinematics_pos_global.sto
+velfile=../Analyzes/KHA$n1.$n2.${n3}_BodyKinematics_vel_global.sto
 if [ -a $posfile ];then
 	if [ $fil -nt $posfile ];then
 	       onejump $fil
@@ -50,10 +50,10 @@ if [ $# -eq 0 ]; then
 #some 'results/traj*.0.0.sto'
 #some 'results/traj0.*.0.sto'
 #some 'results/traj0.0.*.sto'
-some 'Analyzes/traj*.sto'
+some '../Analyzes/traj*.sto'
 fi
 if [ $# = 3 ];then
-	fil="Analyzes/traj$1.$2.$3.sto"
+	fil="../Analyzes/traj$1.$2.$3.sto"
 	if [ -a $fil ];then
 		onejump $fil
 	fi

@@ -38,8 +38,9 @@ try
 {
 
         // Create a new OpenSim model.
+	ofstream Arms("src/ellipseArms.csv", ofstream::out);
         Model osimModel;
-        osimModel.setName("4link3springCont");
+        osimModel.setName("ellipse3springCont");
         osimModel.setAuthors("barak ostraich");
 
             
@@ -361,12 +362,35 @@ cout<<__LINE__<<endl;
 	double pullyrad=0.05,pullylength=0.05;
            // body that acts as the pulley that the path wraps over
 
+  /*  WrapCylinder* pulley1_ = new WrapCylinder();
+    pulley1_->set_radius(pullyrad/2); pulley1_->set_length(pullylength); pulley1_->set_quadrant("-y");
+    pulley1_->setName("wrap1_");pulley1_->set_translation(Vec3(0,-.05,0));
+    WrapCylinder* pulley_ = new WrapCylinder();
+    pulley_->set_radius(pullyrad/2); pulley_->set_length(pullylength); pulley_->set_quadrant("+x");
+    pulley_->setName("wrap1_");pulley_->set_translation(Vec3(0,-.05,0));*/
+        //OpenSim::Body* pulleyBody1 =
+        //new OpenSim::Body("PulleyBody1", pullymass ,Vec3(0),  pullymass*Inertia::sphere(0.1));
+    	//pulleyBody1->addWrapObject(pulley1);
+    	//pulleyBody1->addWrapObject(pulley1_);
+    	//pulleyBody1->addWrapObject(pulley_);
+   // 	osimModel.addBody(pulleyBody1);
+        //WeldJoint* weld1 =
+        //new WeldJoint("weld1", *linkage3, Vec3(0, 0.0, 0), Vec3(0), *pulleyBody1, Vec3(0), Vec3(0));
+   // WeldJoint* weld1_ =
+   // new WeldJoint("weld1_", *linkage3, Vec3(0, -0.05, 0), Vec3(0), *pulleyBody1_, Vec3(0), Vec3(0));
+   //     osimModel.addJoint(weld1);
+   //     osimModel.addJoint(weld1_);
+
+	WrapEllipsoid* ellip = new WrapEllipsoid();
+	ellip->set_dimensions(Vec3(.05,.08,.1));ellip->set_quadrant("-y");
+	ellip->setName("wrap1");
+
 	WrapCylinder* pulley1 = new WrapCylinder();
     	pulley1->set_radius(pullyrad); pulley1->set_length(pullylength); pulley1->set_quadrant("-y");
 	pulley1->setName("wrap1");
         OpenSim::Body* pulleyBody1 =
         new OpenSim::Body("PulleyBody1", pullymass ,Vec3(0),  pullymass*Inertia::sphere(0.1));
-    	pulleyBody1->addWrapObject(pulley1);
+	pulleyBody1->addWrapObject(ellip);
     	osimModel.addBody(pulleyBody1);
         WeldJoint* weld1 =
         new WeldJoint("weld1", *linkage3, Vec3(0, 0.0, 0), Vec3(0), *pulleyBody1, Vec3(0), Vec3(0));
@@ -394,14 +418,22 @@ cout<<__LINE__<<endl;
         new WeldJoint("weld3", *linkage2, Vec3(0, 0.0, 0), Vec3(0), *pulleyBody3, Vec3(0), Vec3(0));
         osimModel.addJoint(weld3);
 
+	// Add the wrap object to the body, which takes ownership of it
+
 	double resting_length=0.25;
+
     	PathSpring* spring1 =
-        new PathSpring("knee_spring",resting_length,stiffness ,dissipation);
+        new PathSpring("knee_spring",0.25,stiffness ,dissipation);
     	spring1->updGeometryPath().
-        appendNewPathPoint("origin1", *linkage3, Vec3(pullyrad, 0.2, 0));
+        appendNewPathPoint("origin1", *linkage3, Vec3(pullyrad, 0.05, 0));
     	spring1->updGeometryPath().
-        appendNewPathPoint("insert1", *linkage2, Vec3(pullyrad,linkageLength2-.05,0));
-    	spring1->updGeometryPath().addPathWrap(*pulley1);
+        //appendNewPathPoint("origin2", *linkage3, Vec3(pullyrad, 0.0, 0));
+    	//spring1->updGeometryPath().
+        appendNewPathPoint("insert1", *linkage2, Vec3(pullyrad,linkageLength2-.2,0));
+    	spring1->updGeometryPath().addPathWrap(*ellip);
+    	//spring1->updGeometryPath().addPathWrap(*pulley1_);
+    	//spring1->updGeometryPath().addPathWrap(*pulley_);
+
     	PathSpring* spring2 =
         new PathSpring("hip_spring",resting_length,stiffness ,dissipation);
     	spring2->updGeometryPath().
@@ -449,12 +481,9 @@ cout<<__LINE__<<endl;
         osimModel.addComponent(ftip);
         osimModel.addComponent(atip);
 
-cout<<__LINE__<<endl;
     osimModel.finalizeConnections();
-cout<<__LINE__<<endl;
  
     cout<<"actsize:"<<osimModel.upd_ForceSet().updActuators().getSize()<<endl;   
-cout<<__LINE__<<endl;
 
         // Initialize system
         osimModel.buildSystem();
@@ -476,7 +505,6 @@ cout<<__LINE__<<endl;
         // Setup ForceReporter and Manager
        // ForceReporter* forces = new ForceReporter(&osimModel);  
        // osimModel.updAnalysisSet().adoptAndAppend(forces);
-cout<<__LINE__<<endl;
 //
 //find initial optimal values for initial state(after setting angles)
 	//Vector udot(4,0.);
@@ -503,8 +531,13 @@ cout<<__LINE__<<endl;
         cout<<"spring tension:"<<spring1->getTension(si)<<"\t"<<spring2->getTension(si)
 	<<"\t"<<spring3->getTension(si)<<endl;
         //cout<<"spring arm:"<<spring1->computeMomentArm(si, coordinates[2])
+	cout<<"ARMS\n";
+       for( int r=(int)(kneeRange[0]*180/Pi); r<(int)(kneeRange[1]*180/Pi);r++){
+       coordinates[4].setValue(si,r*Pi/180, true);
+       Arms<<r<<","<<spring1->computeMomentArm(si, coordinates[4])<<endl;}
+       Arms.close();
         
-        osimModel.print("con3springs.osim");
+        osimModel.print("ellipse.osim");
 cout<<__LINE__<<endl;
     }
     catch (const std::exception& ex)
