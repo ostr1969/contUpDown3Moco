@@ -19,7 +19,7 @@
 
 #include <unistd.h>
 #include <OpenSim/OpenSim.h>
-#include <OpenSim/Actuators/DelpActuator.h>
+//#include <OpenSim/Actuators/DelpActuator.h>
 #include <OpenSim/Common/PiecewiseConstantFunction.h>
 #include <Moco/osimMoco.h>
 #include <Moco/MocoGoal/MocoGoal.h>
@@ -38,8 +38,7 @@ ofstream AllRes("results/allres.csv", ofstream::app);
     double torqueAt90,kUnitSpring;
     double init_a1,init_a2,init_a3;
 Model buildmodel(){
-	Model osimModel("ellipse.osim");
-	//Model osimModel("con3springs.osim");
+	Model osimModel(data.strings[0].val);
         cout<<data.strings[0].val<<endl;
 	osimModel.buildSystem();
 	osimModel.initSystem();
@@ -65,15 +64,15 @@ Model buildmodel(){
         for (const auto& actu : osimModel.getComponentList<DelpActuator>()) {
                 actuNames.append(actu.getName());
         }
-        updateDelpActuator(osimModel, actuNames[0],"src/delp1.txt",.011,.068, 1,16);
-        updateDelpActuator(osimModel, actuNames[1],"src/delp4.txt",.011,.068, 1,18);
-        updateDelpActuator(osimModel, actuNames[2],"src/delp5.txt",.011,.068, 1,20);
-        updateDelpActuator(osimModel, actuNames[3],"src/delp2.txt",.011,.068,-1,16);
-        updateDelpActuator(osimModel, actuNames[4],"src/delp3.txt",.011,.068,-1,18);
-        updateDelpActuator(osimModel, actuNames[5],"src/delp6.txt",.011,.068,-1,20);
+        //updateDelpActuator(osimModel, actuNames[0],"src/delp1.txt",.011,.068, 1,16);
+        //updateDelpActuator(osimModel, actuNames[1],"src/delp4.txt",.011,.068, 1,18);
+        //updateDelpActuator(osimModel, actuNames[2],"src/delp5.txt",.011,.068, 1,20);
+        //updateDelpActuator(osimModel, actuNames[3],"src/delp2.txt",.011,.068,-1,16);
+        //updateDelpActuator(osimModel, actuNames[4],"src/delp3.txt",.011,.068,-1,18);
+        //updateDelpActuator(osimModel, actuNames[5],"src/delp6.txt",.011,.068,-1,20);
 //	const ControllerSet &controllerSet = osimModel.getControllerSet();
 	osimModel.updControllerSet().remove(0);
-	auto& actuA = osimModel.updComponent<DelpActuator>("am");
+	/*auto& actuA = osimModel.updComponent<DelpActuator>("am");
 	q1L=actuA.getDelpLowAngle();
 	q1H=actuA.getDelpHighAngle();
 	auto& actuK = osimModel.updComponent<DelpActuator>("km");
@@ -81,7 +80,10 @@ Model buildmodel(){
 	q2H=actuK.getDelpHighAngle();
 	auto& actuH = osimModel.updComponent<DelpActuator>("hm");
 	q3L=actuH.getDelpLowAngle();
-	q3H=actuH.getDelpHighAngle();
+	q3H=actuH.getDelpHighAngle();*/
+	q1L=-1.923722429122023;q1H=-0.614718059419965;
+	q2L=-0.009220607369027;q2H=2.443460952792060;
+	q3L=-2.096538233893409;q3H= 0.171245467311761;
 
         double allStiff = 10000, allDamping = 5., allTransition = 5.;
         // CoordinateLimitForce* toeLimitForce = new  CoordinateLimitForce("rot_q0", 85,
@@ -93,10 +95,11 @@ Model buildmodel(){
         allStiff, q2L*180/Pi+5, allStiff, allDamping, allTransition);
          CoordinateLimitForce* hipLimitForce = new  CoordinateLimitForce("q3_rot", q3H*180/Pi-5,
         allStiff, q3L*180/Pi+5, allStiff, allDamping, allTransition);
-        ////osimModel.addForce(toeLimitForce);
-        //osimModel.addForce(ankleLimitForce);
-        //osimModel.addForce(kneeLimitForce);
-        //osimModel.addForce(hipLimitForce);
+        //osimModel.addForce(toeLimitForce);
+        osimModel.addForce(ankleLimitForce);
+        osimModel.addForce(kneeLimitForce);
+        osimModel.addForce(hipLimitForce);
+        //c.log(pelrot*180/Pi,pelx,pely,q1*180/Pi,q2*180/Pi,q3*180/Pi);
         CoordinateSet &coordinates = osimModel.updCoordinateSet();
         coordinates[0].setDefaultValue(pelrot);
         coordinates[1].setDefaultValue(pelx);
@@ -158,7 +161,7 @@ Model buildmodel(){
            coordinates[2].setDefaultValue(pely);
            cout<<"final pely:"<<pely<<endl;
 	   Vector tous=compT(2,pely);
-        auto& a1 = osimModel.updComponent<DelpActuator>(actuNames[0]);
+        /*auto& a1 = osimModel.updComponent<DelpActuator>(actuNames[0]);
         a1.setStateVariableValue(si, "activation",tous[5]/a1.getOptimalByCurrentAngle(si));	
 	init_a1=tous[5]/a1.getOptimalByCurrentAngle(si);
         auto& a2 = osimModel.updComponent<DelpActuator>(actuNames[1]);
@@ -170,7 +173,7 @@ Model buildmodel(){
 	tous=compT(2,pely);
         c.log("init_a:",init_a1,init_a2,init_a3);
         if (init_a1<-1 or init_a2<-1 or init_a3<-1 or init_a1>1 or init_a2>1 or init_a3>1)
-			 exit(0); 
+			 exit(0); */
         si.getQ().dump("initial q");
 	//Vector stateInitVars(14,0.);
         //stateInitVars(6)=q0;stateInitVars(8)=q1;stateInitVars(10)=q2;stateInitVars(12)=q3;
@@ -196,7 +199,7 @@ Model buildmodel(){
 
 	//auto& tip= osimModel.updJointSet().get("tip");
 
-        osimModel.print("results/eolo_initial.osim");
+        osimModel.print("results/colo_initial.osim");
 
 
 	
@@ -213,7 +216,7 @@ int main() {
         q0=q0*Pi/180.; q1=q1*Pi/180.; q2=q2*Pi/180.; q3=q3*Pi/180.;
         pelrot=pelrot*Pi/180.;
 
-    study.setName("ellipsecont");
+    study.setName("4linkicont");
 
     // Define the optimal control problem.
     // ===================================
@@ -236,7 +239,7 @@ int main() {
     problem.setStateInfo("/jointset/PelvisToGround/pelvis_mov_y/value", {0.3,1.90},pely);
     problem.setStateInfo("/jointset/ankle/q1_rot/value", MocoBounds(q1L,q1H),
                          MocoInitialBounds(q1), MocoFinalBounds(q1L,q1H));
-    problem.setStateInfo("/jointset/knee/q2_rot/value",  {0*Pi/180,q2H}, q2, {0*Pi/180,q2H});
+    problem.setStateInfo("/jointset/knee/q2_rot/value",  {2*Pi/180,q2H}, q2, {2*Pi/180,q2H});
     problem.setStateInfo("/jointset/hip/q3_rot/value",   {q3L,q3H}, q3, {q3L,q3H});
 
     // Initial and final speed must be 0. Use compact syntax.
@@ -314,9 +317,9 @@ parRun=1;
     // Configure the solver.
     // =====================
    MocoCasADiSolver& solver = study.initCasADiSolver();
-   //MocoTropterSolver& solver=study.initTropterSolver();
+ //MocoTropterSolver& solver=study.initTropterSolver();
     solver.set_num_mesh_intervals(data.ints[1].val);
-    solver.set_verbosity(2);
+    //solver.set_verbosity(2);
     //cout<<data.strings[1].val<<endl;
     solver.set_optim_finite_difference_scheme(data.strings[1].val);
     solver.set_optim_solver("ipopt");
@@ -324,9 +327,6 @@ parRun=1;
     solver.set_optim_convergence_tolerance(data.doubles[2].val);
     solver.set_optim_constraint_tolerance(data.doubles[2].val);
     solver.set_parameters_require_initsystem(data.ints[2].val);
-    //solver.set_optim_solver("snopt");
-    //solver.set_transcription_scheme("hermite-simpson");
-
 
 
     // Now that we've finished setting up the tool, print it to a file.
@@ -366,8 +366,8 @@ parRun=1;
     STOFileAdapter::write(controlTable, "results/colo_controls.sto");
     writeTableToFile(externalForcesTableFlat, "results/colo_forces.sto");
 
-    char Gfiln[80]="results/EGRF";
-    char filn[80]="Analyzes/Etraj";
+    char Gfiln[80]="results/GRF";
+    char filn[80]="Analyzes/traj";
     if (parRun){
 	    sp1s=to_string(data.ints[6].val);
 	    sp2s=to_string(data.ints[7].val);
@@ -425,10 +425,10 @@ parRun=1;
     //study.visualize(solution);
  cout<<solution.getObjectiveTermByIndex(0)<<"\t"<<endl;
     //cout<<"got objective:"<<solution.getObjective()<<endl;
-    cout<<"numsprings[EHA]:"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val
+    cout<<"numsprings[KHA]:"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val
 	<<"         jump:"<<jumphight<<endl;
     if (parRun)
-	cout<<"MaxSprings[EHA]:"<<data.ints[6].val<<","<<data.ints[7].val<<","<<data.ints[8].val
+	cout<<"MaxSprings[KHA]:"<<data.ints[6].val<<","<<data.ints[7].val<<","<<data.ints[8].val
 	              <<endl;
 
     AllRes<<"1,"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val<<endl;

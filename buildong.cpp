@@ -22,7 +22,7 @@
 #define BUILD 1
 #include "additions.h"
 #include "readx_y.h"
-//#include  "MuscleLikeCoordinateActuator.h"
+#include  "MuscleLikeCoordinateActuator.h"
 //#include "myActuatorPowerProbe.cpp"
 //#include "myForceSet.cpp"
 //#include "DelpActuator.h"
@@ -40,7 +40,7 @@ try
 
         // Create a new OpenSim model.
         Model osimModel;
-        osimModel.setName("ellipsespringCont");
+        osimModel.setName("ongspringCont");
         osimModel.setAuthors("barak ostraich");
         ofstream Arms("src/ellipseArms.csv", ofstream::out);
 
@@ -271,7 +271,7 @@ readx_y("src/delp3.txt",cx,cy,sz);SimmSpline flc3(sz, cx,cy);
 readx_y("src/delp4.txt",cx,cy,sz);SimmSpline flc4(sz, cx,cy);double kneeRange[2]={cx[0],cx[sz-1]};
 readx_y("src/delp5.txt",cx,cy,sz);SimmSpline flc5(sz, cx,cy);double hipRange[2]={cx[0],cx[sz-1]};
 readx_y("src/delp6.txt",cx,cy,sz);SimmSpline flc6(sz, cx,cy);
-        auto* a1=new DelpActuator("ap",16.,1,.011,.068,0.,"src/delp1.txt",&coordSet.get("q1_rot"));
+       /* auto* a1=new DelpActuator("ap",16.,1,.011,.068,0.,"src/delp1.txt",&coordSet.get("q1_rot"));
         auto* a2=new DelpActuator("kp",18.,1,.011,.068,0.,"src/delp4.txt",&coordSet.get("q2_rot"));
         auto* a3=new DelpActuator("hp",20.,1,.011,.068,0.,"src/delp5.txt",&coordSet.get("q3_rot"));
         auto* a_1=new DelpActuator("am",16.,-1,.011,.068,0.,"src/delp2.txt",&coordSet.get("q1_rot"));
@@ -285,28 +285,52 @@ readx_y("src/delp6.txt",cx,cy,sz);SimmSpline flc6(sz, cx,cy);
         osimModel.addComponent(a3);
         osimModel.addComponent(a_1);
         osimModel.addComponent(a_2);
-        osimModel.addComponent(a_3);
-//	 addMuscleLikeCoordinateActuator(osimModel, "q1_rot", 100);
-//	 addMuscleLikeCoordinateActuator(osimModel, "q2_rot", 100);
-//	 addMuscleLikeCoordinateActuator(osimModel, "q3_rot", 100);
+        osimModel.addComponent(a_3);*/
+
+    auto* posFunc1 = new PolynomialFunction();
+    posFunc1->setName("ank_pos_force_vs_coordinate_function");
+    posFunc1->setCoefficients( SimTK::Vector(SimTK::Vec4(
+7.423399e+02,2.453524e+03,2.168269e+03,6.356710e+02)));
+    auto* negFunc1 = new PolynomialFunction();
+    negFunc1->setName("ank_neg_force_vs_coordinate_function");
+    posFunc1->setCoefficients( SimTK::Vector(SimTK::Vec4(
+7.881972e+01,1.989458e+02,1.446156e+02,1.326160e+02)));
+    auto* posFunc2 = new PolynomialFunction();
+    posFunc2->setName("knee_pos_force_vs_coordinate_function");
+    posFunc2->setCoefficients( SimTK::Vector(SimTK::Vec4(
+5.560434e+01,-3.669114e+02,5.740813e+02,2.695734e+02)));
+    auto* negFunc2 = new PolynomialFunction();
+    negFunc2->setName("knee_neg_force_vs_coordinate_function");
+    posFunc2->setCoefficients( SimTK::Vector(SimTK::Vec4(
+1.127370e+01,-1.355596e+02,2.840256e+02,2.371430e+02)));
+    auto* posFunc3 = new PolynomialFunction();
+    posFunc3->setName("hip_pos_force_vs_coordinate_function");
+    posFunc3->setCoefficients( SimTK::Vector(SimTK::Vec4(
+1.500306e+01,-2.563684e-01,-1.886318e+02,3.273819e+02)));
+    auto* negFunc3 = new PolynomialFunction();
+    negFunc3->setName("hip_neg_force_vs_coordinate_function");
+    posFunc3->setCoefficients( SimTK::Vector(SimTK::Vec4(
+-2.620106e+01,-1.602739e+02,-1.443092e+02,2.042358e+02)));
+	 addMuscleLikeCoordinateActuator(osimModel, "q1_rot", .011,.068,posFunc1,negFunc1,16);
+	 addMuscleLikeCoordinateActuator(osimModel, "q2_rot", .011,.068,posFunc2,negFunc2,18);
+	 addMuscleLikeCoordinateActuator(osimModel, "q3_rot", .011,.068,posFunc3,negFunc3,20);
 
         
         // define the simulation times
     
-    Actuator &kp=osimModel.updComponent<DelpActuator>("kp") ; 
-    //cout<<osimModel.updForceSet().updActuators().getSize()<<endl;   
+    ////Actuator &kp=osimModel.updComponent<DelpActuator>("kp") ; 
     //osimModel.updForceSet().updActuators().adoptAndAppend(&kp);   
     //cout<<osimModel.updForceSet().updActuators().getSize()<<endl;   
    // cout<<"mmmm:"<<osimModel.getActuators().getSize()<<endl;
-    Array<string> delpNames;
-    delpNames.append("ap");delpNames.append("kp");delpNames.append("hp");
-    delpNames.append("am");delpNames.append("km");delpNames.append("hm");
-    ActuatorPowerProbe* delpWorkProbe = new ActuatorPowerProbe(delpNames, false, 1);
-    delpWorkProbe->setName("delpWork");
-    delpWorkProbe->setOperation("integrate");
-    SimTK::Vector ic1(6,0.);
+    //Array<string> delpNames;
+    //delpNames.append("ap");delpNames.append("kp");delpNames.append("hp");
+    //delpNames.append("am");delpNames.append("km");delpNames.append("hm");
+    //ActuatorPowerProbe* delpWorkProbe = new ActuatorPowerProbe(delpNames, false, 1);
+    //delpWorkProbe->setName("delpWork");
+    //delpWorkProbe->setOperation("integrate");
+    //SimTK::Vector ic1(6,0.);
     //ic1 = 0.0;      // some arbitrary initial condition.
-    delpWorkProbe->setInitialConditions(ic1);
+    //delpWorkProbe->setInitialConditions(ic1);
 cout<<__LINE__<<endl;
     //osimModel.addProbe(delpWorkProbe);
     //cout<<"probe added"<<endl;
@@ -340,22 +364,22 @@ cout<<__LINE__<<endl;
         hip->updCoordinate().setDefaultValue(convertDegreesToRadians(q3));
         // add the controller to the model
         PrescribedController* actcontroller =  new PrescribedController();
-        actcontroller->addActuator(*a1);
-        actcontroller->addActuator(*a2);
-        actcontroller->addActuator(*a3);
-        actcontroller->addActuator(*a_1);
-        actcontroller->addActuator(*a_2);
-        actcontroller->addActuator(*a_3);
+	for (const auto& actu : osimModel.getComponentList<ActivationMuscleLikeCoordinateActuator>()) {
+		                cout<<actu.getName()<<endl;
+				        }
 
-        actcontroller->prescribeControlForActuator("ap", new Constant(0));
-        actcontroller->prescribeControlForActuator("kp", new Constant(0));
-        actcontroller->prescribeControlForActuator("hp", new Constant(0));
-        actcontroller->prescribeControlForActuator("am", new Constant(0));
-        actcontroller->prescribeControlForActuator("km", new Constant(0));
-        actcontroller->prescribeControlForActuator("hm", new Constant(0));
+        auto aset=
+		osimModel.updComponentList<ActivationMuscleLikeCoordinateActuator>();   
+	for(Actuator& act : aset) {
+	actcontroller->addActuator(act);}
+
+        actcontroller->prescribeControlForActuator("tau_q1_rot", new Constant(0));
+        actcontroller->prescribeControlForActuator("tau_q2_rot", new Constant(0));
+        actcontroller->prescribeControlForActuator("tau_q3_rot", new Constant(0));
         actcontroller->set_interpolation_method(3);
     
         osimModel.addController(actcontroller);
+cout<<__LINE__<<endl;
 
         //const ControllerSet &cs= osimModel.getControllerSet();
         osimModel.setGravity(Vec3(0., -9.81   , 0.));
@@ -521,7 +545,7 @@ cout<<__LINE__<<endl;
 	Arms.close();
 
         
-        osimModel.print("ellipse.osim");
+        osimModel.print("ong.osim");
 cout<<__LINE__<<endl;
     }
     catch (const std::exception& ex)
