@@ -20,7 +20,8 @@
 
 
 #include <Moco/osimMoco.h>
-#include "osimMocoJumpGoalDLL.h"
+//#include "osimMocoJumpGoalDLL.h"
+#define OSIMMOCOJUMPGOAL_API
 
 namespace OpenSim {
 

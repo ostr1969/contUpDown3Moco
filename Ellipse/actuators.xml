@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ForceSet name="forceset">
   <objects>
+    <NonlinearSpring name="knee_nlspring">
+      <!--Name of the coordinate to which this force is applied.-->
+      <coordinate>q1_rot</coordinate>
+      <!--Spring stiffness.-->
+      <stiffness>38198.31200</stiffness>
+      <!--spline that defines the force curve vs. coordinate with -->
+      <SimmSpline name="force_vs_coordinate_spline">
+        <x> 0 0.0174533 0.0349066 0.0523599 0.0698132 0.0872665 0.10472 0.122173 0.139626 0.15708 0.174533 0.191986 0.20944 0.226893 0.244346 0.261799 0.279253 0.296706 0.314159 0.331613 0.349066 0.366519 0.383972 0.401426 0.418879 0.436332 0.453786 0.471239 0.488692 0.506145 0.523599 0.541052 0.558505 0.575959 0.593412 0.610865 0.628319 0.645772 0.663225 0.680678 0.698132 0.715585 0.733038 0.750492 0.767945 0.785398 0.802851 0.820305 0.837758 0.855211 0.872665 0.890118 0.907571 0.925025 0.942478 0.959931 0.977384 0.994838 1.01229 1.02974 1.0472 1.06465 1.0821 1.09956 1.11701 1.13446 1.15192 1.16937 1.18682 1.20428 1.22173 1.23918 1.25664 1.27409 1.29154 1.309 1.32645 1.3439 1.36136 1.37881 1.39626 1.41372 1.43117 1.44862 1.46608 1.48353 1.50098 1.51844 1.53589 1.55334 1.5708 1.58825 1.6057 1.62316 1.64061 1.65806 1.67552 1.69297 1.71042 1.72788 1.74533 1.76278 1.78024 1.79769 1.81514 1.8326 1.85005 1.8675 1.88496 1.90241 1.91986 1.93732 1.95477 1.97222 1.98968 2.00713 2.02458 2.04204 2.05949 2.07694 2.0944 2.11185 2.1293 2.14675 2.16421 2.18166 2.19911 2.21657 2.23402 2.25147 2.26893 2.28638 2.30383 2.32129 2.33874 2.35619 2.37365 2.3911 2.40855 2.42601</x>
+        <y> -3.15624e-08 -4.45296e-05 -8.89683e-05 -0.000133295 -0.000177457 -0.000221425 -0.00026637 -0.000311844 -0.000357948 -0.000404762 -0.000452383 -0.000500904 -0.000550416 -0.00060101 -0.000652777 -0.000705801 -0.000760168 -0.00081596 -0.000873256 -0.00093213 -0.000992653 -0.00105489 -0.00111891 -0.00118476 -0.0012525 -0.00132217 -0.00139381 -0.00146745 -0.00154314 -0.00162087 -0.00170068 -0.00178258 -0.00186656 -0.00195262 -0.00204075 -0.00213095 -0.00222319 -0.00231744 -0.00241367 -0.00251185 -0.00261193 -0.00271388 -0.00281763 -0.00292313 -0.00303033 -0.00313915 -0.00324954 -0.00336143 -0.00347473 -0.00358938 -0.00370527 -0.00382234 -0.00394052 -0.00405973 -0.00417987 -0.00430087 -0.00442263 -0.00454507 -0.00466809 -0.00479161 -0.00491553 -0.00503963 -0.00516426 -0.00528883 -0.00541348 -0.00553808 -0.00566255 -0.0057868 -0.00591074 -0.0060343 -0.00615737 -0.00627989 -0.00640176 -0.00652289 -0.00664322 -0.00676267 -0.00688117 -0.00699864 -0.00711501 -0.00723021 -0.00734446 -0.00745685 -0.00756787 -0.0076779 -0.00778623 -0.00789299 -0.00799814 -0.00810162 -0.00820336 -0.00830333 -0.00840146 -0.00849771 -0.00859204 -0.00868441 -0.00877476 -0.00886306 -0.00894928 -0.00903339 -0.00911533 -0.00919509 -0.00927264 -0.00934795 -0.009421 -0.00949176 -0.00956061 -0.00962676 -0.00969058 -0.00975205 -0.00981115 -0.00986788 -0.00992223 -0.0099742 -0.0100238 -0.010071 -0.0101158 -0.0101582 -0.0101983 -0.010236 -0.0102714 -0.0103044 -0.0103351 -0.0103635 -0.0103897 -0.0104135 -0.0104352 -0.0104546 -0.0104719 -0.0104871 -0.0105001 -0.0105111 -0.0105201 -0.0105271 -0.0105322 -0.0105354 -0.0105368 -0.0105365 -0.0105345 -0.0105308 -0.0105255 -0.0105188</y>
+      </SimmSpline>
+    </NonlinearSpring>
     <CoordinateLimitForce name="q1_rot_LimitForce">
       <!--Coordinate (name) to be limited.-->
       <coordinate>q1_rot</coordinate>
@@ -55,52 +66,6 @@
       <!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
       <compute_dissipation_energy>false</compute_dissipation_energy>
     </CoordinateLimitForce>
-    <PathSpring name="knee_spring">
-      <!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
-      <GeometryPath name="geometrypath">
-        <!--The set of points defining the path-->
-        <PathPointSet>
-          <objects>
-            <PathPoint name="origin1">
-              <!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
-              <socket_parent_frame>/bodyset/thigh</socket_parent_frame>
-              <!--The fixed location of the path point expressed in its parent frame.-->
-              <location>0.050000000000000003 0.050000000000000003 0</location>
-            </PathPoint>
-            <PathPoint name="insert1">
-              <!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
-              <socket_parent_frame>/bodyset/shank</socket_parent_frame>
-              <!--The fixed location of the path point expressed in its parent frame.-->
-              <location>0.050000000000000003 0.21820000000000001 0</location>
-            </PathPoint>
-          </objects>
-          <groups/>
-        </PathPointSet>
-        <!--The wrap objects that are associated with this path-->
-        <PathWrapSet>
-          <objects>
-            <PathWrap name="pathwrap">
-              <!--A WrapObject that this PathWrap interacts with.-->
-              <wrap_object>wrap1</wrap_object>
-              <!--The wrapping method used to solve the path around the wrap object.-->
-              <method>hybrid</method>
-            </PathWrap>
-          </objects>
-          <groups/>
-        </PathWrapSet>
-        <!--Default appearance attributes for this GeometryPath-->
-        <Appearance>
-          <!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
-          <color>0 1 0</color>
-        </Appearance>
-      </GeometryPath>
-      <!--The resting length (m) of the PathSpring-->
-      <resting_length>0.25</resting_length>
-      <!--The linear stiffness (N/m) of the PathSpring-->
-      <stiffness>38198.31200</stiffness>
-      <!--The dissipation factor (s/m) of the PathSpring-->
-      <dissipation>0.01</dissipation>
-    </PathSpring>
     <PathSpring name="hip_spring">
       <!--The GeometryPath defines the set of points and wrapping surfaceinteractions that form the path of action of the PathSpring-->
       <GeometryPath name="geometrypath">

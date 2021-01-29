@@ -18,7 +18,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimMocoJumpGoalDLL.h"
+//#include "osimMocoJumpGoalDLL.h"
+#define OSIMMOCOJUMPGOAL_API
 
 extern "C" {
 

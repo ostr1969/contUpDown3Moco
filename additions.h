@@ -39,6 +39,7 @@ InpVars readvars(){
 return data;
 }   
 InpVars data;
+#ifndef OOLO
  void updateDelpActuator(Model& osimModel,string actu,string filename,double activation,
                 double deactivation,int qfac_dir,double maxvel){
         auto& actuP = osimModel.updComponent<DelpActuator>(actu);
@@ -86,6 +87,7 @@ int setInitDelpActivation(Model& osimModel,State& osimState,Vector init_tou){
     model.addComponent(actu);
     return actu;
 }
+#endif //ifndef OOLO
 PathSpring* addWrapSpring(
 	string springname,double resting_length,double stiffness,double dissipation,
 	 OpenSim::Body orglink,Vec3 orgpoint, OpenSim::Body insertlink,Vec3 insertpoint,
@@ -153,6 +155,7 @@ void trajToBinFile(MocoTrajectory solution, string filename)
  
 
 //
+#ifndef OOLO
 double fwdCheck(Model &osimModel ,MocoTrajectory solution){
 	Storage results=solution.exportToStatesStorage();
          cout<<"getstatevector..."<<endl;
@@ -267,6 +270,7 @@ return maxHeight;
 
 
 }
+#endif //ifndef OOLO
 #endif
 void timSeriesToBinFile(TimeSeriesTable controlTable ,std::string filename)
 {    std::vector<double> tim=controlTable.getIndependentColumn();

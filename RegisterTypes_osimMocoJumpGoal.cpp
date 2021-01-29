@@ -15,8 +15,11 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#define REGCPP
 #include "MocoJumpGoal.h"
 #include "RegisterTypes_osimMocoJumpGoal.h"
+//#include "MuscleLikeCoordinateActuator.h"
+//#include "NonlinearSpring.h"
 
 using namespace OpenSim;
 
@@ -25,6 +28,8 @@ static osimMocoJumpGoalInstantiator instantiator;
 OSIMMOCOJUMPGOAL_API void RegisterTypes_osimMocoJumpGoal() {
     try {
         Object::registerType(MocoJumpGoal());
+//	Object::registerType(NonlinearSpring());
+//	Object::registerType(ActivationMuscleLikeCoordinateActuator());
     } catch (const std::exception& e) {
         std::cerr << "ERROR during osimMocoJumpGoal "
                      "Object registration:\n"

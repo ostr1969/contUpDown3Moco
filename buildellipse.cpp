@@ -22,6 +22,7 @@
 #define BUILD 1
 #include "additions.h"
 #include "readx_y.h"
+#include  <OpenSim/Actuators/NonlinearSpring.h>
 //#include  "MuscleLikeCoordinateActuator.h"
 //#include "myActuatorPowerProbe.cpp"
 //#include "myForceSet.cpp"
@@ -360,16 +361,15 @@ cout<<__LINE__<<endl;
         //const ControllerSet &cs= osimModel.getControllerSet();
         osimModel.setGravity(Vec3(0., -9.81   , 0.));
         // debugging.
-	
 //start wrap spring
 //      original length is 8 cm and stiffenes is 350N to each 8cm---for each spring
 //      350N/0.08m=4375
 	double pullymass=.001,stiffness=4454.76*4.,dissipation=0.01;
 	double pullyrad=0.05,pullylength=0.05;
         // body that acts as the pulley that the path wraps over
-        WrapEllipsoid* ellip = new WrapEllipsoid();
-	ellip->set_dimensions(Vec3(.05,.08,.1));ellip->set_quadrant("-y");
-	ellip->setName("wrap1");
+        WrapEllipsoid* epulley1 = new WrapEllipsoid();
+	epulley1->set_dimensions(Vec3(.05,.08,.1));epulley1->set_quadrant("-y");
+	epulley1->setName("wrap1");
 
 
 	WrapCylinder* pulley1 = new WrapCylinder();
@@ -377,7 +377,7 @@ cout<<__LINE__<<endl;
 	pulley1->setName("wrap1");
         OpenSim::Body* pulleyBody1 =
         new OpenSim::Body("PulleyBody1", pullymass ,Vec3(0),  pullymass*Inertia::sphere(0.1));
-    	pulleyBody1->addWrapObject(pulley1);
+    	pulleyBody1->addWrapObject(epulley1);
     	osimModel.addBody(pulleyBody1);
         WeldJoint* weld1 =
         new WeldJoint("weld1", *linkage3, Vec3(0, 0.0, 0), Vec3(0), *pulleyBody1, Vec3(0), Vec3(0));
@@ -407,12 +407,12 @@ cout<<__LINE__<<endl;
 
 	double resting_length=0.25;
     	PathSpring* spring1 =
-        new PathSpring("knee_spring",0.2,stiffness ,dissipation);
+        new PathSpring("knee_spring",0.2,1. ,dissipation);//1N
     	spring1->updGeometryPath().
         appendNewPathPoint("origin1", *linkage3, Vec3(pullyrad*1.01, 0.00, 0));
     	spring1->updGeometryPath().
         appendNewPathPoint("insert1", *linkage2, Vec3(pullyrad,linkageLength2-.2,0));
-    	spring1->updGeometryPath().addPathWrap(*pulley1);
+    	spring1->updGeometryPath().addPathWrap(*epulley1);
     	PathSpring* spring2 =
         new PathSpring("hip_spring",resting_length,stiffness ,dissipation);
     	spring2->updGeometryPath().
@@ -469,11 +469,9 @@ cout<<__LINE__<<endl;
 
         // Initialize system
         osimModel.buildSystem();
-cout<<__LINE__<<endl;
         //default activation must come before initstate
 
         State &si = osimModel.initializeState();
-cout<<__LINE__<<endl;
 
         // Pin joint initial states
         CoordinateSet &coordinates = osimModel.updCoordinateSet();
@@ -515,11 +513,21 @@ cout<<__LINE__<<endl;
 	<<"\t"<<spring3->getTension(si)<<endl;
         //cout<<"spring arm:"<<spring1->computeMomentArm(si, coordinates[2])
 	cout<<"ARMS\n";
+        SimmSpline* sspl=new SimmSpline();double kneeNlTorq;
 	for( int r=(int)(kneeRange[0]*180/Pi); r<(int)(kneeRange[1]*180/Pi);r++){
 	coordinates[4].setValue(si,r*Pi/180, true);
-	Arms<<r<<","<<spring1->computeMomentArm(si, coordinates[4])<<endl;}
+        osimModel.getMultibodySystem().realize(si, Stage::Position);
+        osimModel.getMultibodySystem().realize(si, Stage::Velocity);
+	Arms<<r<<","<<spring1->computeMomentArm(si, coordinates[4])<<","<<
+		spring1->getTension(si)<<endl;
+	kneeNlTorq=spring1->computeMomentArm(si, coordinates[4])*spring1->getTension(si);
+	sspl->addPoint(r*Pi/180,kneeNlTorq);};
 	Arms.close();
 
+        NonlinearSpring* nls1=new NonlinearSpring("q1_rot",sspl,1);
+	nls1->setName("knee_nlspring");
+	//nls1->setForceVsCoordinateSpline(sspl);
+	osimModel.updForceSet().append(nls1);
         
         osimModel.print("ellipse.osim");
 cout<<__LINE__<<endl;

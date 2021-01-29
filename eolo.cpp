@@ -27,6 +27,7 @@
 #include "console.h"
 #include "additions.h"
 #include "MocoJumpGoal.h"
+#include <OpenSim/Actuators/NonlinearSpring.h>
 using namespace OpenSim;
 using namespace SimTK;
 using std::chrono::system_clock;
@@ -54,23 +55,33 @@ Model buildmodel(){
         //coordinates[2].set_default_value( q2);
         //coordinates[3].set_default_value( q3);
         auto& sp1=osimModel.updComponent<PathSpring>("/forceset/knee_spring");
-        sp1.setStiffness(kUnitSpring*data.ints[3].val);
-        cout<<"numsprings:"<<data.ints[3].val<<endl;
+        sp1.setStiffness(0);
+	auto& allpathsprings=osimModel.updForceSet();
+	allpathsprings.remove(0);
+        //cout<<allpathsprings[0].getName()<<endl;	
+	auto& nl1=osimModel.updComponent<NonlinearSpring>("/forceset/knee_nlspring");
+	nl1.setStiffness(kUnitSpring*data.ints[3].val);
         auto& sp2=osimModel.updComponent<PathSpring>("/forceset/hip_spring");
         sp2.setStiffness(kUnitSpring*data.ints[4].val);
         auto& sp3=osimModel.updComponent<PathSpring>("/forceset/ankle_spring");
         sp3.setStiffness(kUnitSpring*data.ints[5].val);
 
 	OpenSim::Array<std::string> actuNames;
+	osimModel.initSystem();
+	cout<<__LINE__<<endl;
+	osimModel.getComponentList<DelpActuator>();
+	cout<<__LINE__<<endl;
         for (const auto& actu : osimModel.getComponentList<DelpActuator>()) {
                 actuNames.append(actu.getName());
         }
+	cout<<__LINE__<<endl;
         updateDelpActuator(osimModel, actuNames[0],"src/delp1.txt",.011,.068, 1,16);
         updateDelpActuator(osimModel, actuNames[1],"src/delp4.txt",.011,.068, 1,18);
         updateDelpActuator(osimModel, actuNames[2],"src/delp5.txt",.011,.068, 1,20);
         updateDelpActuator(osimModel, actuNames[3],"src/delp2.txt",.011,.068,-1,16);
         updateDelpActuator(osimModel, actuNames[4],"src/delp3.txt",.011,.068,-1,18);
         updateDelpActuator(osimModel, actuNames[5],"src/delp6.txt",.011,.068,-1,20);
+        cout<<"knee numsprings:"<<data.ints[3].val<<endl;
 //	const ControllerSet &controllerSet = osimModel.getControllerSet();
 	osimModel.updControllerSet().remove(0);
 	auto& actuA = osimModel.updComponent<DelpActuator>("am");
@@ -82,6 +93,7 @@ Model buildmodel(){
 	auto& actuH = osimModel.updComponent<DelpActuator>("hm");
 	q3L=actuH.getDelpLowAngle();
 	q3H=actuH.getDelpHighAngle();
+	cout<<__LINE__<<endl;
 
         double allStiff = 10000, allDamping = 5., allTransition = 5.;
         // CoordinateLimitForce* toeLimitForce = new  CoordinateLimitForce("rot_q0", 85,
@@ -93,10 +105,11 @@ Model buildmodel(){
         allStiff, q2L*180/Pi+5, allStiff, allDamping, allTransition);
          CoordinateLimitForce* hipLimitForce = new  CoordinateLimitForce("q3_rot", q3H*180/Pi-5,
         allStiff, q3L*180/Pi+5, allStiff, allDamping, allTransition);
+	cout<<__LINE__<<endl;
         ////osimModel.addForce(toeLimitForce);
-        //osimModel.addForce(ankleLimitForce);
-        //osimModel.addForce(kneeLimitForce);
-        //osimModel.addForce(hipLimitForce);
+        osimModel.addForce(ankleLimitForce);
+        osimModel.addForce(kneeLimitForce);
+        osimModel.addForce(hipLimitForce);
         CoordinateSet &coordinates = osimModel.updCoordinateSet();
         coordinates[0].setDefaultValue(pelrot);
         coordinates[1].setDefaultValue(pelx);
@@ -104,8 +117,11 @@ Model buildmodel(){
         coordinates[3].setDefaultValue(q1);
         coordinates[4].setDefaultValue(q2);
         coordinates[5].setDefaultValue(q3);
+	cout<<__LINE__<<endl;
 	osimModel.buildSystem();
+	cout<<__LINE__<<endl;
         State &si = osimModel.initializeState();
+	cout<<__LINE__<<endl;
 	//comute the angle of the line com to tip and fix it
         double comang;
 	Vector udot(6,0.);
@@ -361,10 +377,10 @@ parRun=1;
     TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
             osimModel, solution, contactSpheres_r, contactSpheres_r);
     TimeSeriesTable statesTable=solution.exportToStatesTable();
-    STOFileAdapter::write(statesTable, "results/colo_states.sto");
+    STOFileAdapter::write(statesTable, "results/eolo_states.sto");
     TimeSeriesTable controlTable=solution.exportToControlsTable();
-    STOFileAdapter::write(controlTable, "results/colo_controls.sto");
-    writeTableToFile(externalForcesTableFlat, "results/colo_forces.sto");
+    STOFileAdapter::write(controlTable, "results/eolo_controls.sto");
+    writeTableToFile(externalForcesTableFlat, "results/eolo_forces.sto");
 
     char Gfiln[80]="results/EGRF";
     char filn[80]="Analyzes/Etraj";
@@ -380,9 +396,9 @@ parRun=1;
         strcat(Gfiln,sp1s.c_str());strcat(Gfiln,".");strcat(Gfiln,sp2s.c_str());strcat(Gfiln,".");
         strcat(Gfiln,sp3s.c_str());strcat(Gfiln,".sto");
     writeTableToFile(externalForcesTableFlat, Gfiln);
-    AnalyzeTool("analyze.xml").run();
-    TimeSeriesTable posTable("results/contModel_BodyKinematics_pos_global.sto");
-    TimeSeriesTable velTable("results/contModel_BodyKinematics_vel_global.sto");
+    AnalyzeTool("Eanalyze.xml").run();
+    TimeSeriesTable posTable("results/ellipseModel_BodyKinematics_pos_global.sto");
+    TimeSeriesTable velTable("results/ellipseModel_BodyKinematics_vel_global.sto");
 
     RowVectorView endpos=posTable.getNearestRow(10,false);
     RowVectorView endvel=velTable.getNearestRow(10,false);//without the time
@@ -431,6 +447,5 @@ parRun=1;
 	cout<<"MaxSprings[EHA]:"<<data.ints[6].val<<","<<data.ints[7].val<<","<<data.ints[8].val
 	              <<endl;
 
-    AllRes<<"1,"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val<<endl;
     return EXIT_SUCCESS;
 }
