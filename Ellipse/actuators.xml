@@ -3,7 +3,7 @@
   <objects>
     <NonlinearSpring name="knee_nlspring">
       <!--Name of the coordinate to which this force is applied.-->
-      <coordinate>q1_rot</coordinate>
+      <coordinate>q2_rot</coordinate>
       <!--Spring stiffness.-->
       <stiffness>38198.31200</stiffness>
       <!--spline that defines the force curve vs. coordinate with -->

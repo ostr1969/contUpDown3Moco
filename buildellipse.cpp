@@ -524,7 +524,7 @@ cout<<__LINE__<<endl;
 	sspl->addPoint(r*Pi/180,kneeNlTorq);};
 	Arms.close();
 
-        NonlinearSpring* nls1=new NonlinearSpring("q1_rot",sspl,1);
+        NonlinearSpring* nls1=new NonlinearSpring("q2_rot",sspl,1);
 	nls1->setName("knee_nlspring");
 	//nls1->setForceVsCoordinateSpline(sspl);
 	osimModel.updForceSet().append(nls1);

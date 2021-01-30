@@ -396,11 +396,11 @@ cout<<__LINE__<<endl;
 
 	double resting_length=0.25;
     	PathSpring* spring1 =
-        new PathSpring("knee_spring",resting_length,stiffness ,dissipation);
+        new PathSpring("knee_spring",.4,stiffness ,dissipation);
     	spring1->updGeometryPath().
         appendNewPathPoint("origin1", *linkage3, Vec3(pullyrad, 0.2, 0));
     	spring1->updGeometryPath().
-        appendNewPathPoint("insert1", *linkage2, Vec3(pullyrad,linkageLength2-.05,0));
+        appendNewPathPoint("insert1", *linkage2, Vec3(pullyrad,linkageLength2-.2,0));
     	spring1->updGeometryPath().addPathWrap(*pulley1);
     	PathSpring* spring2 =
         new PathSpring("hip_spring",resting_length,stiffness ,dissipation);

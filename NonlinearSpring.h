@@ -63,18 +63,31 @@ public:
     OpenSim_DECLARE_OUTPUT(torq, double, getCurrentTorque, SimTK::Stage::Dynamics);
 
 
-
-
-
-
 //==============================================================================
 // PUBLIC METHODS
 //==============================================================================
     /** This serves as default constructor or you can specify the coordinate
     name. A name of "" is treated as though unspecified. **/
-    NonlinearSpring(const std::string& coordinateName="");
-    NonlinearSpring(const std::string& coordinateName, SimmSpline* ForceVsCoordinateSpline,
-		    double stiff);
+NonlinearSpring(){
+    setNull();
+    constructProperties();
+}
+NonlinearSpring(const string& coordinateName)
+{
+    setNull();
+    constructProperties();
+
+    if (!coordinateName.empty())
+        set_coordinate(coordinateName);
+}
+NonlinearSpring(const string& coordinateName,
+                SimmSpline* ForceVsCoordinateSpline,double stiff){
+        setNull();
+        constructProperties();
+        set_coordinate(coordinateName);
+        set_force_vs_coordinate_spline(*ForceVsCoordinateSpline);
+        set_stiffness(stiff);
+}
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
@@ -82,19 +95,30 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    void setForceVsCoordinateSpline(
-		                SimmSpline* ForceVsCoordinateSpline);
-    const SimmSpline* getForceVsCoordinateSpline();
+void setForceVsCoordinateSpline(
+                        SimmSpline* ForceVsCoordinateSpline) {
+            set_force_vs_coordinate_spline(*ForceVsCoordinateSpline);
+}
 
     // STIFFNESS
-    void setStiffness(double aStiffness);
-    double getStiffness() const;
+void setStiffness(double aStiffness)
+{ set_stiffness(aStiffness); }
+double getStiffness() const
+{ return get_stiffness(); }
+
     // REST LENGTH
-    void setRestLength(double aRestLength);
-    double getRestLength() const;
+void setRestLength(double aRestLength)
+{ set_rest_length(aRestLength); }
+double getRestLength() const
+{ return get_rest_length(); }
+
     // VISCOSITY
-    void setViscosity(double aViscosity);
-    double getViscosity() const;
+void setViscosity(double aViscosity)
+{ set_viscosity(aViscosity); }
+
+double getViscosity() const
+{ return get_viscosity(); }
+
     double getCurrentTorque(const SimTK::State& s) const {
 		            return computeForceMagnitude(s);}
     /** 
@@ -102,37 +126,84 @@ public:
      * The names of the quantities (column labels) is returned by this first function
      * getRecordLabels()
      */
-    OpenSim::Array<std::string> getRecordLabels() const override ;
+OpenSim::Array<std::string> getRecordLabels() const {
+    OpenSim::Array<std::string> labels("");
+    labels.append(getName()+"_Force");
+    return labels;
+}
+
     /**
      * Given SimTK::State object extract all the values necessary to report forces, application location
      * frame, etc. used in conjunction with getRecordLabels and should return same size Array
      */
-    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override ;
+OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
+    OpenSim::Array<double> values(1);
+    values.append(computeForceMagnitude(state));
+    return values;
+};
+
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
 protected:
     // Force interface.
-    void computeForce(  const SimTK::State& state, 
-                        SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                        SimTK::Vector& mobilityForces) const override;
+void computeForce(const SimTK::State& s,
+                                  SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+                                  SimTK::Vector& generalizedForces) const
+{ if( !_model || !_coord ) return;
+// FORCE
+    applyGeneralizedForce(s, *_coord, computeForceMagnitude(s), generalizedForces);
+}
+
     
     // ModelComponent interface.
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+void extendAddToSystem(SimTK::MultibodySystem& system) const
+{ Super::extendAddToSystem(system);
+    if (_model) {
+        NonlinearSpring* mthis =
+            const_cast<NonlinearSpring*>(this);
+        mthis->_coord = &_model->updCoordinateSet().get(get_coordinate());
+    } }
+
 
     // Setup method to initialize coordinate reference
-    void extendConnectToModel(Model& model) override;
+void extendConnectToModel(Model& model)
+{
+    Super::extendConnectToModel(model);
+    _coord = &model.updCoordinateSet().get(get_coordinate());
+}
+
 
 private:
-    void setNull();
-    void constructProperties();
-    double computeForceMagnitude(const SimTK::State& s) const;
+void setNull()
+{
+    setAuthors("barak based on Frank C. Anderson ");
+}
+void constructProperties()
+{
+    constructProperty_coordinate();
+    constructProperty_stiffness(1.0);
+    constructProperty_rest_length(0.0);
+    constructProperty_viscosity(0.0);
+    SimmSpline ss;
+    constructProperty_force_vs_coordinate_spline(ss);
+}
+
+double computeForceMagnitude(const SimTK::State& s) const
+{ double q = _coord->getValue(s);
+    //double speed =  _coord->getSpeedValue(s);
+    //double force = -getStiffness()*(q - get_rest_length())
+    //                    - get_viscosity()*speed;
+    double force = get_force_vs_coordinate_spline().calcValue(SimTK::Vector(1, q));
+    return force*getStiffness(); }
 
     // Set the Coordinate pointer, and set the corresponding name property
     // to match.
     void setCoordinate(Coordinate* coordinate);
     Coordinate* getCoordinate() const;
-    double getForceVsCoordinateSplineValue(const SimTK::State& s) const;
+const SimmSpline* getForceVsCoordinateSpline() {
+            return &get_force_vs_coordinate_spline();
+}
 
     // Note: reference pointers are automatically set to null on construction 
     // and also on copy construction and copy assignment.

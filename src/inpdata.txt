@@ -1,11 +1,11 @@
 i iterations 3000
-i timediv 70
+i timediv 75
 s modelfile con3springs.osim
 s finite_difference_scheme forward
 s guessfile Analyzes/traj30.0.0.sto
 d timemax 1.0
 d optimalforce 300.
-d converance_tolerance 5e-2
+d converance_tolerance 5e-3
 i require_initsystem 0
 d timemin 0.3 
 d initial_q0 30
