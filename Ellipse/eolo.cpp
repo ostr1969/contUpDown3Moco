@@ -24,7 +24,7 @@
 #include <Moco/osimMoco.h>
 #include <Moco/MocoGoal/MocoGoal.h>
 #include <OpenSim/Common/STOFileAdapter.h>
-#include "console.h"
+#include <OpenSim/Common/console.h>
 #include "additions.h"
 #include "MocoJumpGoal.h"
 #include <OpenSim/Actuators/NonlinearSpring.h>
@@ -39,9 +39,8 @@ ofstream AllRes("results/allres.csv", ofstream::app);
     double torqueAt90,kUnitSpring;
     double init_a1,init_a2,init_a3;
 Model buildmodel(){
-	Model osimModel("ellipse.osim");
-	//Model osimModel("con3springs.osim");
-        cout<<data.strings[0].val<<endl;
+	cout<<"osim filename"<<data.strings[3].val<<endl;
+	Model osimModel("src/"+data.strings[3].val);
 	osimModel.buildSystem();
 	osimModel.initSystem();
         cout<<"built system"<<endl;
@@ -61,6 +60,7 @@ Model buildmodel(){
         //cout<<allpathsprings[0].getName()<<endl;	
 	auto& nl1=osimModel.updComponent<NonlinearSpring>("/forceset/knee_nlspring");
 	nl1.setStiffness(kUnitSpring*data.ints[3].val);
+	cout<<"ellipse long axi:"<<nl1.get_ellipticb()<<endl;
         auto& sp2=osimModel.updComponent<PathSpring>("/forceset/hip_spring");
         sp2.setStiffness(kUnitSpring*data.ints[4].val);
         auto& sp3=osimModel.updComponent<PathSpring>("/forceset/ankle_spring");
@@ -68,13 +68,10 @@ Model buildmodel(){
 
 	OpenSim::Array<std::string> actuNames;
 	osimModel.initSystem();
-	cout<<__LINE__<<endl;
 	osimModel.getComponentList<DelpActuator>();
-	cout<<__LINE__<<endl;
         for (const auto& actu : osimModel.getComponentList<DelpActuator>()) {
                 actuNames.append(actu.getName());
         }
-	cout<<__LINE__<<endl;
         updateDelpActuator(osimModel, actuNames[0],"src/delp1.txt",.011,.068, 1,16);
         updateDelpActuator(osimModel, actuNames[1],"src/delp4.txt",.011,.068, 1,18);
         updateDelpActuator(osimModel, actuNames[2],"src/delp5.txt",.011,.068, 1,20);
@@ -121,6 +118,8 @@ Model buildmodel(){
 	osimModel.buildSystem();
 	cout<<__LINE__<<endl;
         State &si = osimModel.initializeState();
+	cout<<nl1.getCurrentArm(si)<<endl;
+	cout<<nl1.getCurrentTension(si)<<endl;
 	cout<<__LINE__<<endl;
 	//comute the angle of the line com to tip and fix it
         double comang;
@@ -236,7 +235,8 @@ int main() {
     MocoProblem& problem = study.updProblem();
 	//build the initial model with initial angles and get initial activations
 	Model osimModel=buildmodel();
-
+	 auto& nl1=osimModel.updComponent<NonlinearSpring>("/forceset/knee_nlspring");
+          double ellipticb=nl1.get_ellipticb();
     // Model (dynamics).
     // -----------------
       problem.setModelCopy(osimModel);
@@ -370,6 +370,7 @@ parRun=1;
     string sp1s=to_string(data.ints[3].val);
     string sp2s=to_string(data.ints[4].val);
     string sp3s=to_string(data.ints[5].val);
+    cout<<sp1s<<"|"<<sp2s<<"|"<<sp3s<<endl;
    std::vector<std::string> contactSpheres_r;
     std::vector<std::string> contactSpheres_l;
     contactSpheres_r.push_back("aforce");
@@ -382,19 +383,15 @@ parRun=1;
     STOFileAdapter::write(controlTable, "results/eolo_controls.sto");
     writeTableToFile(externalForcesTableFlat, "results/eolo_forces.sto");
 
+    std::stringstream elipb_string;
+    elipb_string<< std::fixed << std::setprecision(3) <<ellipticb;
+
+
     char Gfiln[80]="results/EGRF";
     char filn[80]="Analyzes/Etraj";
-    if (parRun){
-	    sp1s=to_string(data.ints[6].val);
-	    sp2s=to_string(data.ints[7].val);
-	    sp3s=to_string(data.ints[8].val);
-	    string temp="results/AGRF";
-	    strcpy(Gfiln,temp.c_str());
-	    temp="Analyzes/Atraj";
-	    strcpy(filn,temp.c_str());
-    }
         strcat(Gfiln,sp1s.c_str());strcat(Gfiln,".");strcat(Gfiln,sp2s.c_str());strcat(Gfiln,".");
-        strcat(Gfiln,sp3s.c_str());strcat(Gfiln,".sto");
+        strcat(Gfiln,sp3s.c_str());strcat(Gfiln,".");
+	strcat(Gfiln,elipb_string.str().c_str());strcat(Gfiln,".sto");
     writeTableToFile(externalForcesTableFlat, Gfiln);
     AnalyzeTool("Eanalyze.xml").run();
     TimeSeriesTable posTable("results/ellipseModel_BodyKinematics_pos_global.sto");
@@ -420,9 +417,11 @@ parRun=1;
     ts.updTableMetaData().setValueForKey(data.doubles[2].label,to_string(data.doubles[2].val)) ;
     ts.updTableMetaData().setValueForKey(data.doubles[11].label,to_string(data.doubles[11].val)) ;
     ts.updTableMetaData().setValueForKey("jump",to_string(jumphight)) ;
+    ts.updTableMetaData().setValueForKey("ellipticb",to_string(ellipticb));
 
         strcat(filn,sp1s.c_str());strcat(filn,".");strcat(filn,sp2s.c_str());strcat(filn,".");
-        strcat(filn,sp3s.c_str());strcat(filn,".sto");
+	strcat(filn,sp3s.c_str());strcat(filn,".");
+	strcat(filn,elipb_string.str().c_str());strcat(filn,".sto");
 
     STOFileAdapter::write(ts, filn);
   //  STOFileAdapter::write(ts, "results/lasttraj.sto");
@@ -443,6 +442,7 @@ parRun=1;
     //cout<<"got objective:"<<solution.getObjective()<<endl;
     cout<<"numsprings[EHA]:"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val
 	<<"         jump:"<<jumphight<<endl;
+    cout<<"ellipticb:"<<ellipticb<<endl;
     if (parRun)
 	cout<<"MaxSprings[EHA]:"<<data.ints[6].val<<","<<data.ints[7].val<<","<<data.ints[8].val
 	              <<endl;

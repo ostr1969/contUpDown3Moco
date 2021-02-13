@@ -21,7 +21,7 @@
 #include "OpenSim/Common/STOFileAdapter.h"
 #define BUILD 1
 #include "additions.h"
-#include "readx_y.h"
+#include <OpenSim/Common/readx_y.h>
 #include  <OpenSim/Actuators/NonlinearSpring.h>
 //#include  "MuscleLikeCoordinateActuator.h"
 //#include "myActuatorPowerProbe.cpp"
@@ -44,10 +44,14 @@ try
         osimModel.setName("ellipsespringCont");
         osimModel.setAuthors("barak ostraich");
 	std::stringstream ename;
+	std::stringstream osimname;
 	//char efile[80]="src/ellipseArms";
+	cout<<"elliptic long radi:"<<atof(argv[1])<<endl;
 	ename<<"src/ellipseArms";
-	double ellipse_long=0.065;
-	ename <<std::fixed << std::setprecision(2) <<ellipse_long<<".csv";
+	osimname<<"src/ellipse";
+	double ellipse_long=atof(argv[1]);
+	ename <<std::fixed << std::setprecision(3) <<ellipse_long<<".csv";
+	osimname <<std::fixed << std::setprecision(3) <<ellipse_long<<".osim";
 	//strcat(ename, to_string(ellipse_long).c_str());
 	//strcat(ename,".csv");
         ofstream Arms(ename.str(), ofstream::out);
@@ -547,7 +551,7 @@ cout<<__LINE__<<endl;
 	//cout<<arg->getCurrentTension(si1)<<endl;
 
         
-        osimModel.print("ellipse.osim");
+        osimModel.print(osimname.str());
 cout<<__LINE__<<endl;
     }
     catch (const std::exception& ex)

@@ -1,3 +1,4 @@
+//read two columns from fixed width 2 colums file
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
@@ -5,14 +6,6 @@
 #include <cstdlib>
 //#include "mypchip.h"
 using namespace std;
-// g++ readfile.cpp -lstdc++
-// vector<vector<double>> delp1;
-// vector<vector<double>> delp2;
-// vector<vector<double>> delp3;
-// vector<vector<double>> delp4;
-// vector<vector<double>> delp5;
-// vector<vector<double>> delp6;
-
 int readx_y(string filename, double x[],double y[] ,int &sz)
 {
    std::ifstream ifile(filename, std::ios::in);
