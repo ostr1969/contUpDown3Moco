@@ -1,8 +1,8 @@
 i iterations 3000
-i timediv 75
+i timediv 85
 s modelfile con3springs.osim
 s finite_difference_scheme forward
-s guessfile Analyzes/Dtraj30.0.0.5.equal_work.sto
+s guessfile Analyzes/Dtraj30.0.0.15.equal_work.sto
 d timemax 1.0
 d optimalforce 300.
 d converance_tolerance 5e-3
@@ -26,5 +26,5 @@ i readGuessfile 1
 i min_num_of_springs_knee 0
 i min_num_of_springs_hip 0
 i min_num_of_springs_ankle 0
-d dalayAngil 10
+d dalayAngil 20
 i forceOrWork 1

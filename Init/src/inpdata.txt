@@ -26,4 +26,4 @@ i readGuessfile 0
 i min_num_of_springs_knee 0
 i min_num_of_springs_hip 0
 i min_num_of_springs_ankle 0
-d init_jou   10
+d init_jou   15

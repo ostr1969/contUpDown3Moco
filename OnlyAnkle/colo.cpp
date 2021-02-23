@@ -53,7 +53,9 @@ Model buildmodel(){
         //coordinates[2].set_default_value( q2);
         //coordinates[3].set_default_value( q3);
         auto& sp1=osimModel.updComponent<PathSpring>("/forceset/knee_spring");
-	double k1=kUnitSpring*data.ints[3].val;
+        sp1.setStiffness(kUnitSpring*data.ints[3].val);
+
+	/*double k1=kUnitSpring*data.ints[3].val;
 	double L1=sp1.get_resting_length();
 	double k2,dalfa2=140-data.doubles[12].val;
 	if (data.ints[13].val==0)//0 is for equal end force at 140deg
@@ -64,14 +66,19 @@ Model buildmodel(){
 		k2=F2max/(0.05*dalfa2*Pi/180);
 	}
         sp1.setStiffness(k2);
-	sp1.set_resting_length(L1+data.doubles[12].val*Pi/180*0.05);
-	cout<<"org stiffness:"<<k1<<endl;
-	cout<<"new resting length:"<<sp1.get_resting_length()<<" new stiff:"<<sp1.getStiffness()<<endl;
-        cout<<"numsprings:"<<data.ints[3].val<<endl;
+	sp1.set_resting_length(L1+data.doubles[12].val*Pi/180*0.05);*/
         auto& sp2=osimModel.updComponent<PathSpring>("/forceset/hip_spring");
         sp2.setStiffness(kUnitSpring*data.ints[4].val);
+        
         auto& sp3=osimModel.updComponent<PathSpring>("/forceset/ankle_spring");
         sp3.setStiffness(kUnitSpring*data.ints[5].val);
+	double k1=kUnitSpring*data.ints[5].val;
+	double L1=sp3.get_resting_length();
+        cout<<"ankle numsprings:"<<data.ints[5].val<<endl;
+	cout<<"org stiffness:"<<k1<<" org rest length:"<<L1<<endl;
+	sp3.setStiffness(kUnitSpring*data.ints[5].val*data.doubles[13].val);
+	sp3.set_resting_length(L1+data.doubles[12].val*Pi/180*0.05);
+	cout<<"new resting length:"<<sp3.get_resting_length()<<" new stiff:"<<sp3.getStiffness()<<endl;
 
 	OpenSim::Array<std::string> actuNames;
         for (const auto& actu : osimModel.getComponentList<DelpActuator>()) {
@@ -346,17 +353,16 @@ int parRun=0;
     TimeSeriesTable controlTable=solution.exportToControlsTable();
     STOFileAdapter::write(controlTable, "results/colo_controls.sto");
     writeTableToFile(externalForcesTableFlat, "results/colo_forces.sto");
-    std::stringstream alf_string;
+    std::stringstream alf_string,mult_string;
     alf_string<< std::fixed << std::setprecision(0) <<data.doubles[12].val;
-    string fopt;//if 0 equal force, else equal work
-    if (data.ints[13].val==0) fopt="equal_force";
-    else fopt="equal_work";
+    mult_string<< std::fixed << std::setprecision(0) <<data.doubles[13].val;
 
-    char Gfiln[80]="results/DGRF";
-    char filn[80]="Analyzes/Dtraj";
+    char Gfiln[80]="results/OGRF";
+    char filn[80]="Analyzes/Otraj";
         strcat(Gfiln,sp1s.c_str());strcat(Gfiln,".");strcat(Gfiln,sp2s.c_str());strcat(Gfiln,".");
         strcat(Gfiln,sp3s.c_str());strcat(Gfiln,".");
-	strcat(Gfiln,alf_string.str().c_str());strcat(Gfiln,".");strcat(Gfiln,fopt.c_str());
+	strcat(Gfiln,alf_string.str().c_str());strcat(Gfiln,".");
+	strcat(Gfiln,mult_string.str().c_str());
 	strcat(Gfiln,".sto");
     writeTableToFile(externalForcesTableFlat, Gfiln);
     AnalyzeTool("analyze.xml").run();
@@ -383,12 +389,13 @@ int parRun=0;
     ts.updTableMetaData().setValueForKey(data.doubles[2].label,to_string(data.doubles[2].val)) ;
     ts.updTableMetaData().setValueForKey(data.doubles[11].label,to_string(data.doubles[11].val)) ;
     ts.updTableMetaData().setValueForKey("jump",to_string(jumphight)) ;
-    ts.updTableMetaData().setValueForKey("stiffness opt",fopt) ;
-    ts.updTableMetaData().setValueForKey("rest angle",to_string(data.doubles[12].val)) ;
+    ts.updTableMetaData().setValueForKey("initial_angle",to_string(data.doubles[12].val)) ;
+    ts.updTableMetaData().setValueForKey("stif_multiplier",to_string(data.doubles[13].val)) ;
 
         strcat(filn,sp1s.c_str());strcat(filn,".");strcat(filn,sp2s.c_str());strcat(filn,".");
         strcat(filn,sp3s.c_str());strcat(filn,".");
-	strcat(filn,alf_string.str().c_str());strcat(filn,".");strcat(filn,fopt.c_str());
+	strcat(filn,alf_string.str().c_str());strcat(filn,".");
+	strcat(filn,mult_string.str().c_str());
 	strcat(filn,".sto");
 
     STOFileAdapter::write(ts, filn);
@@ -413,7 +420,7 @@ int parRun=0;
     if (parRun)
 	cout<<"MaxSprings[KHA]:"<<data.ints[6].val<<","<<data.ints[7].val<<","<<data.ints[8].val
 	              <<endl;
+    cout<<"init angle:"<<data.doubles[12].val<<" multiplier:"<<data.doubles[13].val<<endl;
 
-    AllRes<<"1,"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val<<endl;
     return EXIT_SUCCESS;
 }

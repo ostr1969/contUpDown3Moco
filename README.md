@@ -59,3 +59,9 @@ SimmSpline take those pairs and convert to spline
 then after DelpActivator is built setTorqueAngleCurve()  can insert this spline to the osim model
 the file exported is con3springs.osim
 
+other optinos:
+OnlyAnkle - modify ankle rest angle and stiifness multiplier
+Weight - modify knee total weight
+Init - modify knee initial tou while maintaining work (obselete)
+Delay - modify  rest angle while maintaining end force or total work
+Ellipse - changing knee wrap to ellipse with a=0.05 and var b

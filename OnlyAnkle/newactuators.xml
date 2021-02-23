@@ -1,0 +1,197 @@
+<ForceSet name="forceset">
+  <objects>
+    <CoordinateLimitForce name="q1_rot_LimitForce">
+      
+      <coordinate>q1_rot</coordinate>
+      
+      <upper_stiffness>10000</upper_stiffness>
+      
+      <upper_limit>-39.8815903534732</upper_limit>
+      
+      <lower_stiffness>10000</lower_stiffness>
+      
+      <lower_limit>-104.9638018332048</lower_limit>
+      
+      <damping>5</damping>
+      
+      <transition>5</transition>
+      
+      <compute_dissipation_energy>false</compute_dissipation_energy>
+    </CoordinateLimitForce>
+    <CoordinateLimitForce name="q2_rot_LimitForce">
+      
+      <coordinate>q2_rot</coordinate>
+      
+      <upper_stiffness>10000</upper_stiffness>
+      
+      <upper_limit>135.00000270481564</upper_limit>
+      
+      <lower_stiffness>10000</lower_stiffness>
+      
+      <lower_limit>4.4716981114329046</lower_limit>
+      
+      <damping>5</damping>
+      
+      <transition>5</transition>
+      
+      <compute_dissipation_energy>false</compute_dissipation_energy>
+    </CoordinateLimitForce>
+    <CoordinateLimitForce name="q3_rot_LimitForce">
+      
+      <coordinate>q3_rot</coordinate>
+      
+      <upper_stiffness>10000</upper_stiffness>
+      
+      <upper_limit>4.8165472104604738</upper_limit>
+      
+      <lower_stiffness>10000</lower_stiffness>
+      
+      <lower_limit>-115.04652403584464</lower_limit>
+      
+      <damping>5</damping>
+      
+      <transition>5</transition>
+      
+      <compute_dissipation_energy>false</compute_dissipation_energy>
+    </CoordinateLimitForce>
+    <PathSpring name="knee_spring">
+					
+					<GeometryPath name="geometrypath">
+						
+						<PathPointSet>
+							<objects>
+								<PathPoint name="origin1">
+									
+									<socket_parent_frame>/bodyset/thigh</socket_parent_frame>
+									
+									<location>0.050000000000000003 0.20000000000000001 0</location>
+								</PathPoint>
+								<PathPoint name="insert1">
+									
+									<socket_parent_frame>/bodyset/shank</socket_parent_frame>
+									
+									<location>0.050000000000000003 0.21820000000000001 0</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						
+						<PathWrapSet>
+							<objects>
+								<PathWrap name="pathwrap">
+									
+									<wrap_object>wrap1</wrap_object>
+									
+									<method>hybrid</method>
+								</PathWrap>
+							</objects>
+							<groups />
+						</PathWrapSet>
+						
+						<Appearance>
+							
+							<color>0 1 0</color>
+						</Appearance>
+					</GeometryPath>
+					
+					<resting_length>0.40000000000000002</resting_length>
+					
+					<stiffness>0.0</stiffness>
+					
+					<dissipation>0.01</dissipation>
+				</PathSpring>
+				<PathSpring name="hip_spring">
+					
+					<GeometryPath name="geometrypath">
+						
+						<PathPointSet>
+							<objects>
+								<PathPoint name="origin2">
+									
+									<socket_parent_frame>/bodyset/HAT</socket_parent_frame>
+									
+									<location>-0.050000000000000003 0.20000000000000001 0</location>
+								</PathPoint>
+								<PathPoint name="insert2">
+									
+									<socket_parent_frame>/bodyset/thigh</socket_parent_frame>
+									
+									<location>-0.050000000000000003 0.36649999999999999 0</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						
+						<PathWrapSet>
+							<objects>
+								<PathWrap name="pathwrap">
+									
+									<wrap_object>wrap2</wrap_object>
+									
+									<method>hybrid</method>
+								</PathWrap>
+							</objects>
+							<groups />
+						</PathWrapSet>
+						
+						<Appearance>
+							
+							<color>0 1 0</color>
+						</Appearance>
+					</GeometryPath>
+					
+					<resting_length>0.25</resting_length>
+					
+					<stiffness>0.0</stiffness>
+					
+					<dissipation>0.01</dissipation>
+				</PathSpring>
+				<PathSpring name="ankle_spring">
+					
+					<GeometryPath name="geometrypath">
+						
+						<PathPointSet>
+							<objects>
+								<PathPoint name="origin3">
+									
+									<socket_parent_frame>/bodyset/shank</socket_parent_frame>
+									
+									<location>-0.050000000000000003 0.20000000000000001 0</location>
+								</PathPoint>
+								<PathPoint name="insert3">
+									
+									<socket_parent_frame>/bodyset/foot</socket_parent_frame>
+									
+									<location>-0.050000000000000003 0.0083999999999999908 0</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						
+						<PathWrapSet>
+							<objects>
+								<PathWrap name="pathwrap">
+									
+									<wrap_object>wrap3</wrap_object>
+									
+									<method>hybrid</method>
+								</PathWrap>
+							</objects>
+							<groups />
+						</PathWrapSet>
+						
+						<Appearance>
+							
+							<color>0 1 0</color>
+						</Appearance>
+					</GeometryPath>
+					
+					<resting_length>0.4802851455917392</resting_length>
+					
+					<stiffness>572957.7951308232</stiffness>
+					
+					<dissipation>0.01</dissipation>
+				</PathSpring>
+			</objects>
+  <groups />
+</ForceSet>

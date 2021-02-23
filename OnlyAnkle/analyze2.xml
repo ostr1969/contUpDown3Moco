@@ -1,11 +1,11 @@
 <OpenSimDocument Version="40000">
-	<AnalyzeTool name="Etraj30.0.0.0.055">
+	<AnalyzeTool name="Otraj0.0.30.92.15">
 		
-		<model_file> ellipse.osim </model_file>
+		<model_file> results/colo_initial.osim </model_file>
 		
 		<replace_force_set>true</replace_force_set>
 		
-		<force_set_files>new.xml</force_set_files>
+		<force_set_files>newactuators.xml</force_set_files>
 		
 		<results_directory>Analyzes</results_directory>
 		
@@ -34,42 +34,30 @@
 					<end_time>1.9</end_time>
 					<step_interval>1</step_interval>
 					<in_degrees>false</in_degrees>
-					
 					<bodies> all</bodies>
-					
 					<express_results_in_body_local_frame>false</express_results_in_body_local_frame>
 				</BodyKinematics>
-
 				<JointReaction name="JointReaction">
 					<on>true</on>
 					<start_time>0</start_time>
 					<end_time>1.9</end_time>
 					<step_interval>1</step_interval>
 					<in_degrees>true</in_degrees>
-					
 					<forces_file />
 					<joint_names> ALL</joint_names>
-					
-					<apply_on_bodies> child</apply_on_bodies>
-					
-					<express_in_frame> child</express_in_frame>
+					<apply_on_bodies> parent</apply_on_bodies>
+					<express_in_frame> parent</express_in_frame>
 				</JointReaction>
 				<ForceReporter name="ForceReporter">
 					
 					<on>true</on>
-					
 					<start_time>0</start_time>
-					
 					<end_time>1.9</end_time>
-					
 					<step_interval>1</step_interval>
-					
 					<in_degrees>true</in_degrees>
-					
 					<include_constraint_forces>false</include_constraint_forces>
 				</ForceReporter>
 				<StatesReporter name="StatesReporter">
-					
 					<on>true</on>
 					<start_time>0</start_time>
 					<end_time>1.9</end_time>
@@ -77,7 +65,6 @@
 					<in_degrees>true</in_degrees>
 				</StatesReporter>
 				<OutputReporter name="OutputReporter">
-					
 					<on>true</on>
                                         <output_paths>
 						am|tou
@@ -111,13 +98,10 @@
                                                 hp|act
                                                 hp|power
                                                 hp|opt
-						forceset/knee_nlspring|torq 
-						forceset/knee_nlspring|arm  
-						forceset/knee_nlspring|tens 
+						forceset/knee_spring|stretch 
 						forceset/hip_spring|stretch 
 						forceset/ankle_spring|stretch
                                         </output_paths>
-					
 					<start_time>0</start_time>
 					<end_time>1.9</end_time>
 					<step_interval>1</step_interval>
@@ -130,22 +114,17 @@
 		<ControllerSet name="Controllers">
 			<objects>
 				<ControlSetController>
-					
-					<controls_file>Analyzes/Etraj30.0.0.0.055.sto</controls_file>
+					<controls_file>Analyzes/Otraj0.0.30.92.15.sto</controls_file>
 				</ControlSetController>
 			</objects>
 			<groups />
 		</ControllerSet>
-		
 		<external_loads_file />
-		<datafile>results/EGRF30.0.0.0.055.sto</datafile>
-		
-		<states_file>Analyzes/Etraj30.0.0.0.055.sto</states_file>
+		<datafile>results/OGRF0.0.30.92.15.sto</datafile>
+		<states_file>Analyzes/Otraj0.0.30.92.15.sto</states_file>
 		
 		<coordinates_file />
-		
 		<speeds_file />
-		
 		<lowpass_cutoff_frequency_for_coordinates>-1</lowpass_cutoff_frequency_for_coordinates>
 	</AnalyzeTool>
 </OpenSimDocument>
