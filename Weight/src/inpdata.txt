@@ -2,7 +2,7 @@ i iterations 3000
 i timediv 75
 s modelfile w3springs.osim  
 s finite_difference_scheme forward
-s guessfile Analyzes/traj30.0.0.sto
+s guessfile Analyzes/Wtraj30.0.0.1.0.sto
 d timemax 1.0
 d optimalforce 300.
 d converance_tolerance 5e-3
@@ -26,4 +26,4 @@ i readGuessfile 1
 i min_num_of_springs_knee 0
 i min_num_of_springs_hip 0
 i min_num_of_springs_ankle 0
-d exoTotalWight 16
+d exoTotalWight 5

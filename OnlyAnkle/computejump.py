@@ -9,7 +9,7 @@ if len(sys.argv)>1:
 	trajfile=sys.argv[1]
 print("-----start fixing actuators.xml-----")
 tofill = ET.parse('actuators.xml')
-filler = ET.parse('con3springs.osim')
+filler = ET.parse('o3springs.osim')
 tofillroot=tofill.getroot()
 gotsprings=filler.findall('.//PathSpring')
 print("removing all pathsprings from actuators.xml")
@@ -47,7 +47,7 @@ an2 = ET.parse('analyze2.xml')
 an2root=an2.getroot()
 print("setting analyis name")
 r=trajfile.split("/")
-an2root[0].set("name",r[1][:-4])
+an2root[0].set("name",r[1][:-4].replace("traj",""))
 print("relplacing controls_file states_file datafile")
 an2root.find(".//controls_file").text=trajfile
 an2root.find(".//states_file").text=trajfile
@@ -55,11 +55,13 @@ an2root.find(".//datafile").text="results/OGRF"+trajfile[14:-4]+".sto"
 print("writing analyze2.xml as actuators")
 an2.write("analyze2.xml")
 os.system("opensim-cmd run-tool analyze2.xml&>/dev/null")
-Y=lastval(trajfile[:-4]+'_BodyKinematics_pos_global.sto',"center_of_mass_Y")
-V=lastval(trajfile[:-4]+'_BodyKinematics_vel_global.sto',"center_of_mass_Y")
+Y=lastval(trajfile[:-4].replace("traj","")+'_BodyKinematics_pos_global.sto',"center_of_mass_Y")
+V=lastval(trajfile[:-4].replace("traj","")+'_BodyKinematics_vel_global.sto',"center_of_mass_Y")
 Y=float(Y);V=float(V)
-print(spA,spH,spK,mult,initAng,Y+V*V/2/9.81)
+print("got YV:",Y,V)
 
+print(spA,spH,spK,mult,initAng,Y+V*V/2/9.81)
+print("infile jump",getstovalue(trajfile,'jump'))
 #fil=sys.argv[1]
 #treename=sys.argv[2]
 #intree=ET.parse(fil)

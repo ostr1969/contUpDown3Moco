@@ -6,6 +6,7 @@ from stoheader import  getstovalue,lastval
 trajfile='Analyzes/Etraj30.0.0.0.055.sto'
 if len(sys.argv)>1:
 	trajfile=sys.argv[1]
+	print("computing on",sys.argv[1])
 print("-----start fixing actuators.xml-----")
 ellip=getstovalue(trajfile,'ellipticb');ellip=ellip[:-3]
 print("reading variables from traj")
@@ -46,17 +47,20 @@ an2 = ET.parse('analyze2.xml')
 an2root=an2.getroot()
 print("setting analyis name")
 r=trajfile.split("/")
-an2root[0].set("name",r[1][:-4])
+an2root[0].set("name","EHA"+r[1][5:-4])
 print("relplacing controls_file states_file datafile")
 an2root.find(".//controls_file").text=trajfile
 an2root.find(".//states_file").text=trajfile
 an2root.find(".//datafile").text="results/EGRF"+trajfile[14:-4]+".sto"
-print("writing analyze2.xml as actuators")
+an2root.find(".//model_file").text="src/ellipse"+ellip+".osim"
+print("writing analyze2.xml ")
 an2.write("analyze2.xml")
 os.system("opensim-cmd run-tool analyze2.xml&>/dev/null")
-Y=lastval(trajfile[:-4]+'_BodyKinematics_pos_global.sto',"center_of_mass_Y")
-V=lastval(trajfile[:-4]+'_BodyKinematics_vel_global.sto',"center_of_mass_Y")
+print("query last point trajfrom",trajfile[:-4].replace("traj","HA"))
+Y=lastval(trajfile[:-4].replace("traj","HA")+'_BodyKinematics_pos_global.sto',"center_of_mass_Y")
+V=lastval(trajfile[:-4].replace("traj","HA")+'_BodyKinematics_vel_global.sto',"center_of_mass_Y")
 Y=float(Y);V=float(V)
+print("found Y and V",Y,V)
 print(spK,spH,spA,ellip,Y+V*V/2/9.81)
 
 #fil=sys.argv[1]

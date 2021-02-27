@@ -380,8 +380,8 @@ parRun=1;
 
     RowVectorView endpos=posTable.getNearestRow(10,false);
     RowVectorView endvel=velTable.getNearestRow(10,false);//without the time
-    cout<<"endvel:"<<endvel[43]<<" endpos:"<<endpos[43]<<endl;
-    double jumphight=endpos[43]+endvel[43]*endvel[43]/2/9.81;
+    cout<<"endvel:"<<endvel[55]<<" endpos:"<<endpos[55]<<endl;
+    double jumphight=endpos[55]+endvel[55]*endvel[55]/2/9.81;
 
     TimeSeriesTable ts=solution.convertToTable();
     ts.updTableMetaData().setValueForKey(data.ints[1].label,sp0s) ;

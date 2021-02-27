@@ -1,5 +1,6 @@
 #!/bin/python3
 import sys
+import glob
 def getstovalue(filn,var):
 	with open(filn) as f:
 		lines=f.readlines()
@@ -9,11 +10,12 @@ def getstovalue(filn,var):
 		if line.find(var)>-1:
 			res=line.split("=")
 			return res[1].replace("\n","")
+	return "-"
 def lastline(fil):
 	with open(fil, "r") as file:
-	  first_line = file.readline()
-	  for last_lin in file:
-		  pass
+		first_line = file.readline()
+		for last_lin in file:
+			pass
 	return last_lin
 def printcol(fil,txt):
 	readtitles=0;cols=[0];startprint=0
@@ -50,7 +52,6 @@ def lastval(fil,txt):
 				for count,v in enumerate(tit):
 					if v.find(txt)>-1:
 						cols.append(count)
-						#print(v,end=" ")
 				readtitles=0;startprint=1;continue
 			if startprint==1:
 				pass   
@@ -72,12 +73,28 @@ def printtitles(fil):
 				for count,v in enumerate(tit):
 					print(count,v)
 				readtitles=0;break
+def getvarsInline(filn):
+	K=getstovalue(filn,"num_of_springs_knee")
+	H=getstovalue(filn,"num_of_springs_hip")
+	A=getstovalue(filn,"num_of_springs_ankle")
+	J=getstovalue(filn,"jump")
+	S=getstovalue(filn,"stif_multiplier")
+	I=getstovalue(filn,"initial_angle")
+	W=getstovalue(filn,"total exo weight")
+	E=getstovalue(filn,"ellipticb")
+	Y=getstovalue(filn,"rest angle")
+	F=getstovalue(filn,"stiffness opt")
+	print(K,H,A,J,S,I,W,E,Y,F)
+def allresults():
+	tr=glob.glob('Analyzes/*traj*')
+	for f in tr:
+		getvarsInline(f)
 
 if __name__ == "__main__":
-	p=getstovalue('Analyzes/Otraj0.0.30.92.15.sto','timediv')
-	
-	p=lastline('Analyzes/Otraj0.0.30.92.15.sto')
-	#p=printcol('Analyzes/Otraj0.0.30.92.15.sto',"time")
-	p=printtitles('Analyzes/Otraj0.0.30.92.15_BodyKinematics_pos_global.sto')
-	p=lastval('Analyzes/Otraj0.0.30.92.15_BodyKinematics_pos_global.sto',"center_of_mass_Y")
-
+	#p=getstovalue('Analyzes/Otraj0.0.30.92.15.sto','timediv')
+	#p=lastline('Analyzes/Otraj0.0.30.92.15.sto')
+	#p=printcol( "Analyzes/traj48.48.0.sto", "aforce.HalfSpace.torque.Y")
+	#p=printtitles('Analyzes/Otraj0.0.30.92.15_BodyKinematics_pos_global.sto')
+	#p=lastval('Analyzes/Otraj0.0.30.92.15_BodyKinematics_pos_global.sto',"center_of_mass_Y")
+	#getvarsInline("Analyzes/traj48.48.0.sto")
+	allresults()

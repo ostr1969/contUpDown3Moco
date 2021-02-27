@@ -10,6 +10,7 @@ do
 	n2=$(echo $line|cut -d" " -f2)
 	n3=$(echo $line|cut -d" " -f3)
 	repl $n1 $n2 $n3
-	while ./ccolo; [ $? != 0  ] ;do :;done
+	#while ./ccolo; [ $? != 0  ] ;do :;done
+	./ccolo
 
 done 

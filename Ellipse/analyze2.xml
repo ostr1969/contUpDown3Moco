@@ -1,11 +1,11 @@
 <OpenSimDocument Version="40000">
-	<AnalyzeTool name="Etraj30.0.0.0.055">
+	<AnalyzeTool name="EHA30.0.0.0.090">
 		
-		<model_file> ellipse.osim </model_file>
+		<model_file>src/ellipse0.090.osim</model_file>
 		
 		<replace_force_set>true</replace_force_set>
 		
-		<force_set_files>new.xml</force_set_files>
+		<force_set_files>newactuators.xml</force_set_files>
 		
 		<results_directory>Analyzes</results_directory>
 		
@@ -131,16 +131,16 @@
 			<objects>
 				<ControlSetController>
 					
-					<controls_file>Analyzes/Etraj30.0.0.0.055.sto</controls_file>
+					<controls_file>Analyzes/Etraj30.0.0.0.090.sto</controls_file>
 				</ControlSetController>
 			</objects>
 			<groups />
 		</ControllerSet>
 		
 		<external_loads_file />
-		<datafile>results/EGRF30.0.0.0.055.sto</datafile>
+		<datafile>results/EGRF30.0.0.0.090.sto</datafile>
 		
-		<states_file>Analyzes/Etraj30.0.0.0.055.sto</states_file>
+		<states_file>Analyzes/Etraj30.0.0.0.090.sto</states_file>
 		
 		<coordinates_file />
 		

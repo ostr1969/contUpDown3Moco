@@ -21,9 +21,7 @@
 #include "OpenSim/Common/STOFileAdapter.h"
 #define BUILD 1
 #include "additions.h"
-#include "readx_y.h"
-#include  <OpenSim/Actuators/NonlinearSpring.h>
-//#include  "MuscleLikeCoordinateActuator.h"
+#include <OpenSim/Common/readx_y.h>
 //#include "myActuatorPowerProbe.cpp"
 //#include "myForceSet.cpp"
 //#include "DelpActuator.h"
@@ -41,17 +39,8 @@ try
 
         // Create a new OpenSim model.
         Model osimModel;
-        osimModel.setName("ellipsespringCont");
+        osimModel.setName("4link3springCont");
         osimModel.setAuthors("barak ostraich");
-	std::stringstream ename;
-	//char efile[80]="src/ellipseArms";
-	ename<<"src/ellipseArms";
-	double ellipse_long=0.065;
-	ename <<std::fixed << std::setprecision(2) <<ellipse_long<<".csv";
-	//strcat(ename, to_string(ellipse_long).c_str());
-	//strcat(ename,".csv");
-        ofstream Arms(ename.str(), ofstream::out);
-
 
             
         // Get the ground body.
@@ -59,26 +48,29 @@ try
         ground.attachGeometry(new Mesh("checkered_floor.vtp"));
 
         // Create first linkage body.
-        double linkageMass1 = 2.32 , linkageLength1 = 0.2084, linkageDiameter = 0.02;
-        double linkageMass2 = 7.44 , linkageLength2 = 0.4182;
-        double linkageMass3 = 16   , linkageLength3 = 0.4165;
-        double linkageMass4 = 54.24, linkageLength4 = 0.7780;
+        double footMass = 2.32 , footLength = 0.2084, linkageDiameter = 0.02;
+        double shankMass = 7.44 , shankLength = 0.4182;
+        double thighMass = 16   , thighLength = 0.4165;
+        double HATMass = 54.24, HATLength = 0.799 ;
         
-        Vec3 linkageMassCenter1(0.,linkageLength1-0.1140836,0.);
-        Vec3 linkageMassCenter2(0.,linkageLength2-0.18647538,0.);
-        Vec3 linkageMassCenter3(0.,linkageLength3-0.17055675,0.);
-        Vec3 linkageMassCenter4(0.,linkageLength4-0.4237,0.);
+        Vec3 linkageMassCenter1(0.,footLength-0.1292   ,0.);
+        Vec3 linkageMassCenter2(0.,shankLength-0.18108   ,0.);
+        Vec3 linkageMassCenter3(0.,thighLength-0.18034   ,0.);
+        Vec3 linkageMassCenter4(0.,HATLength-0.5   ,0.);
         double exothick=0.015;
         Vec3 exocenter(0.,exothick/2,0.);
 
-        OpenSim::Body* linkage1 = new OpenSim::Body("foot", linkageMass1,
-                linkageMassCenter1, Inertia(0.1,0.1,0.00662,0.,0.,0.));
-        OpenSim::Body* linkage2 = new OpenSim::Body("shank", linkageMass2,
-                linkageMassCenter2, Inertia(0.1,0.1,0.1057,0.,0.,0.));
-        OpenSim::Body* linkage3 = new OpenSim::Body("thigh", linkageMass3,
-                linkageMassCenter3, Inertia(0.2,0.1,0.217584,0.,0.,0.));
-        OpenSim::Body* linkage4 = new OpenSim::Body("HAT", linkageMass4,
-                linkageMassCenter4, Inertia(1.1,1.1,1.48,0.,0.,0.));
+        OpenSim::Body* foot_body = new OpenSim::Body("foot", footMass,
+                linkageMassCenter1, Inertia(0.1,0.1,0.03495,0.,0.,0.));
+        OpenSim::Body* shank_body = new OpenSim::Body("shank", shankMass,
+                linkageMassCenter2, Inertia(0.1,0.1,0.11867,0.,0.,0.));
+        OpenSim::Body* thigh_body = new OpenSim::Body("thigh", thighMass,
+                linkageMassCenter3, Inertia(0.2,0.1,0.28957 ,0.,0.,0.));
+        OpenSim::Body* HAT_body = new OpenSim::Body("HAT", HATMass,
+                linkageMassCenter4, Inertia(5.1,5.1,8.518,0.,0.,0.));//1.48
+
+
+
 
         //create z vector for all joints 
         Rotation R = Rotation(-Pi/2, ZAxis); 
@@ -88,57 +80,60 @@ try
         //Sphere psphere(0.01);
         //psphere.upd_Appearance().set_color(SimTK::Vec3(1.0, 0.0, 0.0));
         Cylinder exo(.05, exothick);
+        double exoMassTop=0.434*2,exoCmTop=0.134; //toppart mass and dist from knee
+        double exoMassBot=0.451*2,exoCmBot=0.091; //toppart mass and dist from knee
+	double exoI_Top=4.5*2/1000, exoI_Bot=6.9*2/1000; //moment of inertia kg*m*m for two
 	Brick brick(Vec3(.05/2, 0.01, .01));
 	
-        Cylinder cyl1(linkageDiameter/2, linkageLength1/2);
-        Frame* cyl1Frame = new PhysicalOffsetFrame(*linkage1, 
-            Transform(Vec3(0.0, linkageLength1/2 , 0.0)));
+        Cylinder cyl1(linkageDiameter/2, footLength/2);
+        Frame* cyl1Frame = new PhysicalOffsetFrame(*foot_body, 
+            Transform(Vec3(0.0, footLength/2 , 0.0)));
         cyl1Frame->setName("Cyl1_frame");
         cyl1Frame->attachGeometry(cyl1.clone());
         //cyl1Frame->attachGeometry(exo.clone());
         // cyl1Frame->attachGeometry(new Mesh("foot.vtp"));
-        Frame* b1Frame = new PhysicalOffsetFrame(*linkage1,
-            Transform(Vec3(-0.05/2, linkageLength1-.05, 0.)));
+        Frame* b1Frame = new PhysicalOffsetFrame(*foot_body,
+            Transform(Vec3(-0.05/2, footLength-.05, 0.)));
 	b1Frame->attachGeometry(brick.clone());
         osimModel.addComponent(b1Frame);
         osimModel.addComponent(cyl1Frame);
 
         // Create shank body.
-        Cylinder cyl2(linkageDiameter/2, linkageLength2/2);
-        Frame* cyl2Frame = new PhysicalOffsetFrame(*linkage2,
-            Transform(Vec3(0.0, linkageLength2/2 , 0.0)));
+        Cylinder cyl2(linkageDiameter/2, shankLength/2);
+        Frame* cyl2Frame = new PhysicalOffsetFrame(*shank_body,
+            Transform(Vec3(0.0, shankLength/2 , 0.0)));
         cyl2Frame->setName("Cyl2_frame");
         cyl2Frame->attachGeometry(cyl2.clone());
-        cyl2Frame->attachGeometry(exo.clone());
+        //cyl2Frame->attachGeometry(exo.clone());//cyl on shank(end of exo)
 
-        Frame* b2Frame = new PhysicalOffsetFrame(*linkage2,
-            Transform(Vec3(0.05/2, linkageLength2-.05, 0.)));
-	b2Frame->attachGeometry(brick.clone());
+        Frame* b2Frame = new PhysicalOffsetFrame(*shank_body,
+            Transform(Vec3(0.05/2, shankLength-.05, 0.)));
+	//b2Frame->attachGeometry(brick.clone());//small cube on shank
         osimModel.addComponent(b2Frame);
         osimModel.addComponent(cyl2Frame);
         // Create thigh body.
-        linkage3->attachGeometry(sphere.clone());
-        Cylinder cyl3(linkageDiameter/2, linkageLength3/2);
-        Frame* cyl3Frame = new PhysicalOffsetFrame(*linkage3,
-            Transform(Vec3(0.0, linkageLength3/2 , 0.0)));
+        thigh_body->attachGeometry(sphere.clone());
+        Cylinder cyl3(linkageDiameter/2, thighLength/2);
+        Frame* cyl3Frame = new PhysicalOffsetFrame(*thigh_body,
+            Transform(Vec3(0.0, thighLength/2 , 0.0)));
         cyl3Frame->setName("Cyl3_frame");
         cyl3Frame->attachGeometry(cyl3.clone());
-        cyl3Frame->attachGeometry(exo.clone());
+        //cyl3Frame->attachGeometry(exo.clone());
         //cyl3Frame->attachGeometry(new Mesh("femur_r.vtp"));
-        Frame* b3Frame = new PhysicalOffsetFrame(*linkage3,
-            Transform(Vec3(-0.05/2, linkageLength3-.05, 0.)));
+        Frame* b3Frame = new PhysicalOffsetFrame(*thigh_body,
+            Transform(Vec3(-0.05/2, thighLength-.05, 0.)));
 	b3Frame->attachGeometry(brick.clone());
         osimModel.addComponent(b3Frame);
         osimModel.addComponent(cyl3Frame);
         // Create HAT body.
-        linkage4->attachGeometry(sphere.clone());
-        Cylinder cyl4(linkageDiameter/2, linkageLength4/2);
-        Frame* cyl4Frame = new PhysicalOffsetFrame(*linkage4,
-            Transform(Vec3(0.0, linkageLength4 / 2.0, 0.0)));
-        Frame* exo4Frame = new PhysicalOffsetFrame(*linkage4,
+        HAT_body->attachGeometry(sphere.clone());
+        Cylinder cyl4(linkageDiameter/2, HATLength/2);
+        Frame* cyl4Frame = new PhysicalOffsetFrame(*HAT_body,
+            Transform(Vec3(0.0, HATLength / 2.0, 0.0)));
+        Frame* exo4Frame = new PhysicalOffsetFrame(*HAT_body,
             Transform(Vec3(0.0, 0.2, 0.0)));
-        Frame* headFrame = new PhysicalOffsetFrame(*linkage4,
-            Transform(Vec3(0.0, linkageLength4, 0.0)));
+        Frame* headFrame = new PhysicalOffsetFrame(*HAT_body,
+            Transform(Vec3(0.0, HATLength, 0.0)));
 	headFrame->attachGeometry(head.clone());
         cyl4Frame->setName("Cyl4_frame");
         cyl4Frame->attachGeometry(cyl4.clone());
@@ -146,39 +141,81 @@ try
         osimModel.addComponent(cyl4Frame);
         osimModel.addComponent(headFrame);
         osimModel.addComponent(exo4Frame);
+/*	//create exoskeleton
+	//I=m*r^2  r=sqrt(I/m)
+	double exoRogTop=sqrt(exoI_Top/exoMassTop);//radi of giration
+	double exoRogBot=sqrt(exoI_Bot/exoMassBot);//radi of giration bot
+        exoMassTop=1;exoMassBot=1;double ITop=exoMassTop*exoRogTop*exoRogTop;
+				  double IBot=exoMassBot*exoRogBot*exoRogBot;
+	cout<<"exomass(two legs):"<<exoMassTop+exoMassBot<<endl;
+	cout<<"exoI:"<<ITop<<","<<IBot<<endl;
+        OpenSim::Body* thighExoBody = new OpenSim::Body("thigh_exo",exoMassTop ,
+                Vec3(0,exoCmTop,0), Inertia(1.1,1.1,ITop,0.,0.,0.));
+        OpenSim::Body* shankExoBody = new OpenSim::Body("shank_exo", exoMassBot,
+                Vec3(0,exoCmBot,0), Inertia(1.1,1.1,IBot,0.,0.,0.));
+       osimModel.addBody(thighExoBody);osimModel.addBody(shankExoBody);
+	WeldJoint* weldt =
+       new WeldJoint("weldtop", *thigh_body, Vec3(0, 0.0,0),Vec3(0),
+		       *thighExoBody, Vec3(0), Vec3(0));
+               osimModel.addJoint(weldt);
+	WeldJoint* weldb =
+       new WeldJoint("weldbot",*shank_body, Vec3(0,shankLength,0),Vec3(0,0,Pi),
+		       *shankExoBody,Vec3(0),Vec3(0));
+               osimModel.addJoint(weldb);
+	       //top exo drawing
+	Brick tbrick(Vec3(.01, exoCmTop, .01));
+        Frame* TFrame1 = new PhysicalOffsetFrame(*thigh_body,
+            Transform(Vec3(0, exoCmTop, 0.05)));
+	TFrame1->attachGeometry(tbrick.clone());
+        osimModel.addComponent(TFrame1);
+        Frame* TFrame2 = new PhysicalOffsetFrame(*thigh_body,
+            Transform(Vec3(0, exoCmTop, -0.05)));
+	TFrame2->attachGeometry(tbrick.clone());
+        osimModel.addComponent(TFrame2);
+	//bot exo drawing
+	Brick bbrick(Vec3(.01, exoCmBot, .01));
+        Frame* BFrame1 = new PhysicalOffsetFrame(*shankExoBody,
+            Transform(Vec3(0, exoCmBot, 0.05)));
+	BFrame1->attachGeometry(bbrick.clone());
+        osimModel.addComponent(BFrame1);
+        Frame* BFrame2 = new PhysicalOffsetFrame(*shankExoBody,
+            Transform(Vec3(0, exoCmBot, -0.05)));
+	BFrame2->attachGeometry(bbrick.clone());
+        osimModel.addComponent(BFrame2);*/
+	
 //create markers
 
     	Marker*m0 = new Marker();
     	m0->setName("m0");
-    	m0->setParentFrame(*linkage4);
+    	m0->setParentFrame(*HAT_body);
     	m0->set_location(SimTK::Vec3(-0.05,0,0));
      	osimModel.addMarker(m0);
     	Marker*m1 = new Marker();
     	m1->setName("m1");
-    	m1->setParentFrame(*linkage3);
-    	m1->set_location(SimTK::Vec3(-0.05,linkageLength3,0));
+    	m1->setParentFrame(*thigh_body);
+    	m1->set_location(SimTK::Vec3(-0.05,thighLength,0));
      	osimModel.addMarker(m1);
     	Marker*m2 = new Marker();
     	m2->setName("m2");
-    	m2->setParentFrame(*linkage3);
+    	m2->setParentFrame(*thigh_body);
     	m2->set_location(SimTK::Vec3(0.05,0,0));
      	osimModel.addMarker(m2);
     	Marker*m3 = new Marker();
     	m3->setName("m3");
-    	m3->setParentFrame(*linkage2);
-    	m3->set_location(SimTK::Vec3(0.05,linkageLength2,0));
+    	m3->setParentFrame(*shank_body);
+    	m3->set_location(SimTK::Vec3(0.05,shankLength,0));
      	osimModel.addMarker(m3);
     	Marker*m4 = new Marker();
     	m4->setName("m4");
-    	m4->setParentFrame(*linkage2);
+    	m4->setParentFrame(*shank_body);
     	m4->set_location(SimTK::Vec3(-0.05,0,0));
      	osimModel.addMarker(m4);
     	Marker*m5 = new Marker();
     	m5->setName("m5");
-    	m5->setParentFrame(*linkage1);
-    	m5->set_location(SimTK::Vec3(-0.05,linkageLength1,0));
+    	m5->setParentFrame(*foot_body);
+    	m5->set_location(SimTK::Vec3(-0.05,footLength,0));
      	osimModel.addMarker(m5);
-        Marker *tipmarker=new Marker("tipm",*linkage1,Vec3(0));
+        Marker *tipmarker=new Marker("tipm",*foot_body,Vec3(0));
 	osimModel.addMarker(tipmarker);
 
 
@@ -186,30 +223,30 @@ try
         // kinematic chain from ground through the block.
         Vec3 orientationInGround(0.);
         Vec3 locationInGround(0.);
-        Vec3 locationInParent1(0.0, linkageLength1, 0.0);
-        Vec3 locationInParent2(0.0, linkageLength2, 0.0);
-        Vec3 locationInParent3(0.0, linkageLength3, 0.0);
-        Vec3 locationInParent4(0.0, linkageLength4, 0.0);
+        Vec3 locationInParent1(0.0, footLength, 0.0);
+        Vec3 locationInParent2(0.0, shankLength, 0.0);
+        Vec3 locationInParent3(0.0, thighLength, 0.0);
+        Vec3 locationInParent4(0.0, HATLength, 0.0);
         Vec3 orientationInChild(0.);
         Vec3 locationInChild(0.);
 
         PinJoint* tip   = new PinJoint("tip",
                 ground, locationInGround, orientationInGround,
-                *linkage1, locationInChild, orientationInChild);
+                *foot_body, locationInChild, orientationInChild);
 
         PinJoint* ankle = new PinJoint("ankle",
-                *linkage1, locationInParent1, orientationInChild,
-                *linkage2, locationInChild, orientationInChild);
+                *foot_body, locationInParent1, orientationInChild,
+                *shank_body, locationInChild, orientationInChild);
 
         PinJoint* knee = new PinJoint("knee",
-                *linkage2, locationInParent2, orientationInChild,
-                *linkage3, locationInChild, orientationInChild);
+                *shank_body, locationInParent2, orientationInChild,
+                *thigh_body, locationInChild, orientationInChild);
 
         PinJoint* hip = new PinJoint("hip",
-                *linkage3, locationInParent3, orientationInChild,
-                *linkage4, locationInChild, orientationInChild);
+                *thigh_body, locationInParent3, orientationInChild,
+                *HAT_body, locationInChild, orientationInChild);
         PlanarJoint *pelvisToGround = new PlanarJoint("PelvisToGround",
-            ground, *linkage4);
+            ground, *HAT_body);
 
         // A planar joint has three coordinates:
         //     RotationZ, TranslationX, TranslationY
@@ -254,10 +291,10 @@ try
 
 
         // Add the bodies to the model
-        osimModel.addBody(linkage1);
-        osimModel.addBody(linkage2);
-        osimModel.addBody(linkage3);
-        osimModel.addBody(linkage4);
+        osimModel.addBody(foot_body);
+        osimModel.addBody(shank_body);
+        osimModel.addBody(thigh_body);
+        osimModel.addBody(HAT_body);
 
         // Add the joints to the model
         //osimModel.addJoint(tip);
@@ -294,10 +331,6 @@ readx_y("src/delp6.txt",cx,cy,sz);SimmSpline flc6(sz, cx,cy);
         osimModel.addComponent(a_1);
         osimModel.addComponent(a_2);
         osimModel.addComponent(a_3);
-//	 addMuscleLikeCoordinateActuator(osimModel, "q1_rot", 100);
-//	 addMuscleLikeCoordinateActuator(osimModel, "q2_rot", 100);
-//	 addMuscleLikeCoordinateActuator(osimModel, "q3_rot", 100);
-
         
         // define the simulation times
     
@@ -368,71 +401,68 @@ cout<<__LINE__<<endl;
         //const ControllerSet &cs= osimModel.getControllerSet();
         osimModel.setGravity(Vec3(0., -9.81   , 0.));
         // debugging.
+	
 //start wrap spring
 //      original length is 8 cm and stiffenes is 350N to each 8cm---for each spring
 //      350N/0.08m=4375
 	double pullymass=.001,stiffness=4454.76*4.,dissipation=0.01;
-	double pullyrad=0.05,pullylength=0.05;
-        // body that acts as the pulley that the path wraps over
-        WrapEllipsoid* epulley1 = new WrapEllipsoid();
-	epulley1->set_dimensions(Vec3(.05,ellipse_long,.1));epulley1->set_quadrant("-y");
-	epulley1->setName("wrap1");
-
+	double pullyrad=0.05,pullylength=0.05,pullyinertia=.0001;
+           // body that acts as the pulley that the path wraps over
 
 	WrapCylinder* pulley1 = new WrapCylinder();
     	pulley1->set_radius(pullyrad); pulley1->set_length(pullylength); pulley1->set_quadrant("-y");
 	pulley1->setName("wrap1");
         OpenSim::Body* pulleyBody1 =
-        new OpenSim::Body("PulleyBody1", pullymass ,Vec3(0),  pullymass*Inertia::sphere(0.1));
-    	pulleyBody1->addWrapObject(epulley1);
+        new OpenSim::Body("PulleyBody1", pullymass ,Vec3(0),  pullymass*Inertia::sphere(.0001));
+    	pulleyBody1->addWrapObject(pulley1);
     	osimModel.addBody(pulleyBody1);
         WeldJoint* weld1 =
-        new WeldJoint("weld1", *linkage3, Vec3(0, 0.0, 0), Vec3(0), *pulleyBody1, Vec3(0), Vec3(0));
+        new WeldJoint("weld1", *thigh_body, Vec3(0, 0.0, 0), Vec3(0), *pulleyBody1, Vec3(0), Vec3(0));
         osimModel.addJoint(weld1);
 
 	WrapCylinder* pulley2 = new WrapCylinder();
     	pulley2->set_radius(pullyrad); pulley2->set_length(pullylength); pulley2->set_quadrant("-x");
 	pulley2->setName("wrap2");
         OpenSim::Body* pulleyBody2 =
-        new OpenSim::Body("PulleyBody2", pullymass ,Vec3(0),  pullymass*Inertia::sphere(0.1));
+        new OpenSim::Body("PulleyBody2", pullymass ,Vec3(0),  pullymass*Inertia::sphere(.0001));
     	pulleyBody2->addWrapObject(pulley2);
     	osimModel.addBody(pulleyBody2);
         WeldJoint* weld2 =
-        new WeldJoint("weld2", *linkage4, Vec3(0, 0.0, 0), Vec3(0), *pulleyBody2, Vec3(0), Vec3(0));
+        new WeldJoint("weld2", *HAT_body, Vec3(0, 0.0, 0), Vec3(0), *pulleyBody2, Vec3(0), Vec3(0));
         osimModel.addJoint(weld2);
 
 	WrapCylinder* pulley3 = new WrapCylinder();
     	pulley3->set_radius(pullyrad); pulley3->set_length(pullylength); pulley3->set_quadrant("-x");
 	pulley3->setName("wrap3");
         OpenSim::Body* pulleyBody3 =
-        new OpenSim::Body("PulleyBody3", pullymass ,Vec3(0),  pullymass*Inertia::sphere(0.1));
+        new OpenSim::Body("PulleyBody3", pullymass ,Vec3(0),  pullymass*Inertia::sphere(.0001));
     	pulleyBody3->addWrapObject(pulley3);
     	osimModel.addBody(pulleyBody3);
         WeldJoint* weld3 =
-        new WeldJoint("weld3", *linkage2, Vec3(0, 0.0, 0), Vec3(0), *pulleyBody3, Vec3(0), Vec3(0));
+        new WeldJoint("weld3", *shank_body, Vec3(0, 0.0, 0), Vec3(0), *pulleyBody3, Vec3(0), Vec3(0));
         osimModel.addJoint(weld3);
 
 	double resting_length=0.25;
     	PathSpring* spring1 =
-        new PathSpring("knee_spring",0.2,1. ,dissipation);//1N
+        new PathSpring("knee_spring",.4,stiffness ,dissipation);
     	spring1->updGeometryPath().
-        appendNewPathPoint("origin1", *linkage3, Vec3(pullyrad*1.01, 0.00, 0));
+        appendNewPathPoint("origin1", *thigh_body, Vec3(pullyrad, 0.2, 0));
     	spring1->updGeometryPath().
-        appendNewPathPoint("insert1", *linkage2, Vec3(pullyrad,linkageLength2-.2,0));
-    	spring1->updGeometryPath().addPathWrap(*epulley1);
+        appendNewPathPoint("insert1", *shank_body, Vec3(pullyrad,shankLength-.2,0));
+    	spring1->updGeometryPath().addPathWrap(*pulley1);
     	PathSpring* spring2 =
         new PathSpring("hip_spring",resting_length,stiffness ,dissipation);
     	spring2->updGeometryPath().
-        appendNewPathPoint("origin2", *linkage4, Vec3(-pullyrad, 0.2, 0));
+        appendNewPathPoint("origin2", *HAT_body, Vec3(-pullyrad, 0.2, 0));
     	spring2->updGeometryPath().
-        appendNewPathPoint("insert2", *linkage3, Vec3(-pullyrad,linkageLength3-.05,0));
+        appendNewPathPoint("insert2", *thigh_body, Vec3(-pullyrad,thighLength-.05,0));
     	spring2->updGeometryPath().addPathWrap(*pulley2);
     	PathSpring* spring3 =
-        new PathSpring("ankle_spring",resting_length,stiffness ,dissipation);
+        new PathSpring("ankle_spring",0.4,stiffness ,dissipation);
     	spring3->updGeometryPath().
-        appendNewPathPoint("origin3", *linkage2, Vec3(-pullyrad, 0.2, 0));
+        appendNewPathPoint("origin3", *shank_body, Vec3(-pullyrad, 0.2, 0));
     	spring3->updGeometryPath().
-        appendNewPathPoint("insert3", *linkage1, Vec3(-pullyrad,linkageLength1-.05,0));
+        appendNewPathPoint("insert3", *foot_body, Vec3(-pullyrad,footLength-.2,0));
     	spring3->updGeometryPath().addPathWrap(*pulley3);
 cout<<__LINE__<<endl;
     	osimModel.addForce(spring1);
@@ -442,8 +472,8 @@ cout<<__LINE__<<endl;
 //create contact between low point and ground
     	ContactHalfSpace *floor =
         new ContactHalfSpace(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI), ground, "floor");
-    	ContactSphere *tipc= new ContactSphere(0.02,Vec3(0),*linkage1,"tipcontact");
-    	ContactSphere *tipa= new ContactSphere(0.02,Vec3(0),*linkage2,"ankcontact");
+    	ContactSphere *tipc= new ContactSphere(0.02,Vec3(0),*foot_body,"tipcontact");
+    	ContactSphere *tipa= new ContactSphere(0.02,Vec3(0),*shank_body,"ankcontact");
     	osimModel.addComponent(floor);
     	osimModel.addComponent(tipc);
     	osimModel.addComponent(tipa);
@@ -467,12 +497,9 @@ cout<<__LINE__<<endl;
         osimModel.addComponent(ftip);
         osimModel.addComponent(atip);
 
-cout<<__LINE__<<endl;
     osimModel.finalizeConnections();
-cout<<__LINE__<<endl;
  
     cout<<"actsize:"<<osimModel.upd_ForceSet().updActuators().getSize()<<endl;   
-cout<<__LINE__<<endl;
 
         // Initialize system
         osimModel.buildSystem();
@@ -482,9 +509,6 @@ cout<<__LINE__<<endl;
 
         // Pin joint initial states
         CoordinateSet &coordinates = osimModel.updCoordinateSet();
-       // coordinates[0].setValue(si, 0, true);
-       // coordinates[1].setValue(si,0, true);
-       // coordinates[2].setValue(si, , true);
         coordinates[3].setValue(si,q1*Pi/180, true);
         coordinates[4].setValue(si,q2*Pi/180, true);
         coordinates[5].setValue(si,q3*Pi/180, true);
@@ -519,35 +543,8 @@ cout<<__LINE__<<endl;
         cout<<"spring tension:"<<spring1->getTension(si)<<"\t"<<spring2->getTension(si)
 	<<"\t"<<spring3->getTension(si)<<endl;
         //cout<<"spring arm:"<<spring1->computeMomentArm(si, coordinates[2])
-	cout<<"ARMS\n";
-        SimmSpline* arm_spl=new SimmSpline();double kneeNlTorq;
-	SimmSpline* tens_spl=new SimmSpline();
-	for( int r=(int)(kneeRange[0]*180/Pi); r<(int)(kneeRange[1]*180/Pi);r++){
-	coordinates[4].setValue(si,r*Pi/180, true);
-        osimModel.getMultibodySystem().realize(si, Stage::Position);
-        osimModel.getMultibodySystem().realize(si, Stage::Velocity);
-	Arms<<r<<","<<spring1->computeMomentArm(si, coordinates[4])<<","<<
-		spring1->getTension(si)<<endl;
-	kneeNlTorq=spring1->computeMomentArm(si, coordinates[4])*spring1->getTension(si);
-	arm_spl->addPoint(r*Pi/180,spring1->computeMomentArm(si, coordinates[4]));
-	tens_spl->addPoint(r*Pi/180,spring1->getTension(si));}
-	Arms.close();
-
-        NonlinearSpring* nls1=new NonlinearSpring("q2_rot",tens_spl,arm_spl,1);
-	nls1->setName("knee_nlspring");
-	nls1->set_elliptica(0.05);
-	nls1->set_ellipticb(ellipse_long);
-	//nls1->setForceVsCoordinateSpline(sspl);
-	osimModel.updForceSet().append(nls1);
-        State &si1 = osimModel.initializeState();
-cout<<__LINE__<<endl;
-        //auto& n1=osimModel.updForceSet();
-	//auto arg = dynamic_cast<NonlinearSpring*>(&n1[3]);
-	//cout<<arg->getCurrentArm(si1)<<endl;
-	//cout<<arg->getCurrentTension(si1)<<endl;
-
         
-        osimModel.print("ellipse.osim");
+        osimModel.print("o3springs.osim");
 cout<<__LINE__<<endl;
     }
     catch (const std::exception& ex)

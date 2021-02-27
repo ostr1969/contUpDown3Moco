@@ -185,13 +185,13 @@
 						<!--Radius of cylinder.-->
 						<radius>0.01</radius>
 						<!--Half-Height of cylinder.-->
-						<half_height>0.38900000000000001</half_height>
+						<half_height>0.39950000000000002</half_height>
 					</Cylinder>
 				</attached_geometry>
 				<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
 				<socket_parent>/bodyset/HAT</socket_parent>
 				<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
-				<translation>0 0.38900000000000001 0</translation>
+				<translation>0 0.39950000000000002 0</translation>
 				<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 				<orientation>-0 0 -0</orientation>
 			</PhysicalOffsetFrame>
@@ -215,7 +215,7 @@
 				<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
 				<socket_parent>/bodyset/HAT</socket_parent>
 				<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
-				<translation>0 0.77800000000000002 0</translation>
+				<translation>0 0.79900000000000004 0</translation>
 				<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
 				<orientation>-0 0 -0</orientation>
 			</PhysicalOffsetFrame>
@@ -527,9 +527,9 @@
 					<!--The mass of the body (kg)-->
 					<mass>2.3199999999999998</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
-					<mass_center>0 0.094316400000000009 0</mass_center>
+					<mass_center>0 0.079199999999999993 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>0.10000000000000001 0.10000000000000001 0.00662 0 0 0</inertia>
+					<inertia>0.10000000000000001 0.10000000000000001 0.034950000000000002 0 0 0</inertia>
 				</Body>
 				<Body name="shank">
 					<!--The geometry used to display the axes of this Frame.-->
@@ -542,9 +542,9 @@
 					<!--The mass of the body (kg)-->
 					<mass>7.4400000000000004</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
-					<mass_center>0 0.23172462000000002 0</mass_center>
+					<mass_center>0 0.23712000000000003 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>0.10000000000000001 0.10000000000000001 0.1057 0 0 0</inertia>
+					<inertia>0.10000000000000001 0.10000000000000001 0.11867 0 0 0</inertia>
 				</Body>
 				<Body name="thigh">
 					<!--The geometry used to display the axes of this Frame.-->
@@ -566,9 +566,9 @@
 					<!--The mass of the body (kg)-->
 					<mass>16</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
-					<mass_center>0 0.24594324999999997 0</mass_center>
+					<mass_center>0 0.23615999999999998 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>0.20000000000000001 0.10000000000000001 0.217584 0 0 0</inertia>
+					<inertia>0.20000000000000001 0.10000000000000001 0.28956999999999999 0 0 0</inertia>
 				</Body>
 				<Body name="HAT">
 					<!--The geometry used to display the axes of this Frame.-->
@@ -590,9 +590,9 @@
 					<!--The mass of the body (kg)-->
 					<mass>54.240000000000002</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
-					<mass_center>0 0.3543 0</mass_center>
+					<mass_center>0 0.29900000000000004 0</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>1.1000000000000001 1.1000000000000001 1.48 0 0 0</inertia>
+					<inertia>5.0999999999999996 5.0999999999999996 8.5180000000000007 0 0 0</inertia>
 				</Body>
 				<Body name="PulleyBody1">
 					<!--The geometry used to display the axes of this Frame.-->

@@ -458,11 +458,11 @@ cout<<__LINE__<<endl;
         appendNewPathPoint("insert2", *thigh_body, Vec3(-pullyrad,thighLength-.05,0));
     	spring2->updGeometryPath().addPathWrap(*pulley2);
     	PathSpring* spring3 =
-        new PathSpring("ankle_spring",resting_length,stiffness ,dissipation);
+        new PathSpring("ankle_spring",0.4,stiffness ,dissipation);
     	spring3->updGeometryPath().
         appendNewPathPoint("origin3", *shank_body, Vec3(-pullyrad, 0.2, 0));
     	spring3->updGeometryPath().
-        appendNewPathPoint("insert3", *foot_body, Vec3(-pullyrad,footLength-.05,0));
+        appendNewPathPoint("insert3", *foot_body, Vec3(-pullyrad,footLength-.2,0));
     	spring3->updGeometryPath().addPathWrap(*pulley3);
 cout<<__LINE__<<endl;
     	osimModel.addForce(spring1);
@@ -497,20 +497,15 @@ cout<<__LINE__<<endl;
         osimModel.addComponent(ftip);
         osimModel.addComponent(atip);
 
-cout<<__LINE__<<endl;
     osimModel.finalizeConnections();
-cout<<__LINE__<<endl;
  
     cout<<"actsize:"<<osimModel.upd_ForceSet().updActuators().getSize()<<endl;   
-cout<<__LINE__<<endl;
 
         // Initialize system
         osimModel.buildSystem();
-cout<<__LINE__<<endl;
         //default activation must come before initstate
 
         State &si = osimModel.initializeState();
-cout<<__LINE__<<endl;
 
         // Pin joint initial states
         CoordinateSet &coordinates = osimModel.updCoordinateSet();

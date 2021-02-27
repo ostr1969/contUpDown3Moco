@@ -15,10 +15,8 @@ SET(CMAKE_C_COMPILER /opt/rh/devtoolset-7/root/usr/bin/gcc)
 
 # List your source and header files here.
 #set(my_source_files JumpingOptimization.cpp PrescribedController.cpp)
-set(my_source_files RegisterTypes_osimMocoJumpGoal.cpp  MocoJumpGoal.cpp colo.cpp  )
 set(e_source_files RegisterTypes_osimMocoJumpGoal.cpp   MocoJumpGoal.cpp eolo.cpp  )
-set(4links_source_files build3cont.cpp)
-set(ellipse_files   buildellipse.cpp )
+set(ellipse_files   ebuild.cpp )
 
 
 #set(THREADS_PREFER_PTHREAD_FLAG ON)

@@ -1,5 +1,5 @@
 <OpenSimDocument Version="40000">
-	<AnalyzeTool name="Otraj0.0.30.92.15">
+	<AnalyzeTool name="O0.0.30.92.10">
 		
 		<model_file> results/colo_initial.osim </model_file>
 		
@@ -114,14 +114,14 @@
 		<ControllerSet name="Controllers">
 			<objects>
 				<ControlSetController>
-					<controls_file>Analyzes/Otraj0.0.30.92.15.sto</controls_file>
+					<controls_file>Analyzes/Otraj0.0.30.92.10.sto</controls_file>
 				</ControlSetController>
 			</objects>
 			<groups />
 		</ControllerSet>
 		<external_loads_file />
-		<datafile>results/OGRF0.0.30.92.15.sto</datafile>
-		<states_file>Analyzes/Otraj0.0.30.92.15.sto</states_file>
+		<datafile>results/OGRF0.0.30.92.10.sto</datafile>
+		<states_file>Analyzes/Otraj0.0.30.92.10.sto</states_file>
 		
 		<coordinates_file />
 		<speeds_file />

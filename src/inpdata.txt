@@ -2,7 +2,7 @@ i iterations 3000
 i timediv 75
 s modelfile con3springs.osim
 s finite_difference_scheme forward
-s guessfile Analyzes/Etraj30.0.0.sto
+s guessfile Analyzes/traj0.0.30.sto
 d timemax 1.0
 d optimalforce 300.
 d converance_tolerance 5e-3
@@ -16,9 +16,9 @@ d initial_pelvis_rot -12
 d initial_pelvis_x 0
 d initial_pelvis_y 0.865
 d TorqueAt90 5
-i num_of_springs_knee  30
-i num_of_springs_hip  0
-i num_of_springs_ankle  0
+i num_of_springs_knee 0
+i num_of_springs_hip 0
+i num_of_springs_ankle 30
 i max_num_of_springs_knee 0
 i max_num_of_springs_hip 0
 i max_num_of_springs_ankle 0

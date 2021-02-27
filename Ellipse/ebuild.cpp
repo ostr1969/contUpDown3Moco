@@ -66,23 +66,23 @@ try
         double linkageMass1 = 2.32 , linkageLength1 = 0.2084, linkageDiameter = 0.02;
         double linkageMass2 = 7.44 , linkageLength2 = 0.4182;
         double linkageMass3 = 16   , linkageLength3 = 0.4165;
-        double linkageMass4 = 54.24, linkageLength4 = 0.7780;
+        double linkageMass4 = 54.24, linkageLength4 = 0.799;
         
-        Vec3 linkageMassCenter1(0.,linkageLength1-0.1140836,0.);
-        Vec3 linkageMassCenter2(0.,linkageLength2-0.18647538,0.);
-        Vec3 linkageMassCenter3(0.,linkageLength3-0.17055675,0.);
-        Vec3 linkageMassCenter4(0.,linkageLength4-0.4237,0.);
+        Vec3 linkageMassCenter1(0.,linkageLength1-0.1292,0.);
+        Vec3 linkageMassCenter2(0.,linkageLength2-0.18108,0.);
+        Vec3 linkageMassCenter3(0.,linkageLength3-0.18034,0.);
+        Vec3 linkageMassCenter4(0.,linkageLength4-0.5,0.);
         double exothick=0.015;
         Vec3 exocenter(0.,exothick/2,0.);
 
         OpenSim::Body* linkage1 = new OpenSim::Body("foot", linkageMass1,
-                linkageMassCenter1, Inertia(0.1,0.1,0.00662,0.,0.,0.));
+                linkageMassCenter1, Inertia(0.1,0.1,0.03495,0.,0.,0.));
         OpenSim::Body* linkage2 = new OpenSim::Body("shank", linkageMass2,
-                linkageMassCenter2, Inertia(0.1,0.1,0.1057,0.,0.,0.));
+                linkageMassCenter2, Inertia(0.1,0.1,0.11867,0.,0.,0.));
         OpenSim::Body* linkage3 = new OpenSim::Body("thigh", linkageMass3,
-                linkageMassCenter3, Inertia(0.2,0.1,0.217584,0.,0.,0.));
+                linkageMassCenter3, Inertia(0.2,0.1,0.28957,0.,0.,0.));
         OpenSim::Body* linkage4 = new OpenSim::Body("HAT", linkageMass4,
-                linkageMassCenter4, Inertia(1.1,1.1,1.48,0.,0.,0.));
+                linkageMassCenter4, Inertia(5.1,5.1,8.518,0.,0.,0.));
 
         //create z vector for all joints 
         Rotation R = Rotation(-Pi/2, ZAxis); 

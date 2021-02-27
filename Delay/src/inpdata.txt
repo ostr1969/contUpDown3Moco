@@ -26,5 +26,5 @@ i readGuessfile 1
 i min_num_of_springs_knee 0
 i min_num_of_springs_hip 0
 i min_num_of_springs_ankle 0
-d dalayAngil 20
+d dalayAngil 0
 i forceOrWork 1
