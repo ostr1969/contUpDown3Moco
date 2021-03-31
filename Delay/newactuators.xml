@@ -94,9 +94,9 @@
 						</Appearance>
 					</GeometryPath>
 					
-					<resting_length>0.40436332312998585</resting_length>
+					<resting_length>0.40000000000000002</resting_length>
 					
-					<stiffness>41079.00424166122</stiffness>
+					<stiffness>0.0</stiffness>
 					
 					<dissipation>0.01</dissipation>
 				</PathSpring>
@@ -162,7 +162,7 @@
 									
 									<socket_parent_frame>/bodyset/foot</socket_parent_frame>
 									
-									<location>-0.050000000000000003 0.15839999999999999 0</location>
+									<location>-0.050000000000000003 0.0083999999999999908 0</location>
 								</PathPoint>
 							</objects>
 							<groups />
@@ -186,9 +186,9 @@
 						</Appearance>
 					</GeometryPath>
 					
-					<resting_length>0.25</resting_length>
+					<resting_length>0.47853981633974485</resting_length>
 					
-					<stiffness>0.0</stiffness>
+					<stiffness>1155464.88684716</stiffness>
 					
 					<dissipation>0.01</dissipation>
 				</PathSpring>

@@ -62,6 +62,7 @@ int setInitDelpActivation(Model& osimModel,State& osimState,Vector init_tou){
         auto& actuN3 = osimModel.updComponent<DelpActuator>("/hp");
         optmax=actuN3.getDelpOptimal(osimState);//get the optimal for this angle
         actuN3.setStateVariableValue(osimState,"activation",init_tou(3)/optmax);
+        return 1;
 }
  DelpActuator* addDelpActuator(Model& model, std::string coordName,
         string actuname,string filename,int qfac_dir,double maxvel) {

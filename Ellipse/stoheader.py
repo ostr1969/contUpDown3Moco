@@ -17,8 +17,9 @@ def lastline(fil):
 		for last_lin in file:
 			pass
 	return last_lin
-def printcol(fil,txt):
-	readtitles=0;cols=[0];startprint=0
+def printcol(fil,txt,verbose=True):
+	mynum=int(txt) if txt.isdigit() else -1
+	readtitles=0;cols=[0];startprint=0;vals=[];
 	with open(fil, "r") as file:
 		for last_lin in file:
 			if last_lin=="endheader\n":
@@ -26,19 +27,33 @@ def printcol(fil,txt):
 				continue
 			if readtitles==1:
 				tit=last_lin.split("\t")
-				print(tit[0],end=" ")
+				if verbose: print(tit[0],end=" ")
 				for count,v in enumerate(tit):
-					if v.find(txt)>-1:
+					if v.find(txt)>-1 or count==mynum:
 						cols.append(count)
 						print(v,end=" ")
-				print()
+				if verbose: print()
 				readtitles=0;startprint=1;continue
 			if startprint==1:
 				tit=last_lin.split("\t")
 				for i in cols:
 					pass
-					print(tit[i],end=" "),
-				print()
+					if verbose: print(tit[i].replace('\n',''),end=" "),
+					vals.append(tit[i])
+				if verbose: print()
+	return vals
+def findmin(fil,txt):
+	ll=printcol(fil,txt,False)
+	vals=[]
+	for i in ll[1::2]:
+		vals.append(float(i))
+	print(min(vals))
+def findmax(fil,txt):
+	ll=printcol(fil,txt,False)
+	vals=[]
+	for i in ll[1::2]:
+		vals.append(float(i))
+	print(max(vals))
 def lastval(fil,txt):
 	readtitles=0;cols=[];startprint=0
 	with open(fil, "r") as file:

@@ -1,11 +1,11 @@
 <OpenSimDocument Version="40000">
-	<AnalyzeTool name="D30.0.0.5.equal_work">
+	<AnalyzeTool name="D0.0.30.90.equal_work">
 		
-		<model_file> results/colo_initial.osim </model_file>
+		<model_file> d3springs.osim </model_file>
 		
 		<replace_force_set>true</replace_force_set>
 		
-		<force_set_files>actuators.xml</force_set_files>
+		<force_set_files>newactuators.xml</force_set_files>
 		
 		<results_directory>Analyzes</results_directory>
 		
@@ -126,7 +126,7 @@
                                                 hp|opt
 						forceset/knee_spring|stretch 
 						forceset/hip_spring|stretch 
-						forceset/ankle_spring|stretch
+						forceset/ankle_spring|tension 
                                         </output_paths>
 					
 					
@@ -146,16 +146,16 @@
 			<objects>
 				<ControlSetController>
 					
-					<controls_file>Analyzes/Dtraj30.0.0.5.equal_work.sto</controls_file>
+					<controls_file>Analyzes/Dtraj0.0.30.90.equal_work.sto</controls_file>
 				</ControlSetController>
 			</objects>
 			<groups />
 		</ControllerSet>
 		
 		<external_loads_file />
-		<datafile>results/DGRF30.0.0.5.equal_work.sto</datafile>
+		<datafile>results/DGRF0.0.30.90.equal_work.sto</datafile>
 		
-		<states_file>Analyzes/Dtraj30.0.0.5.equal_work.sto</states_file>
+		<states_file>Analyzes/Dtraj0.0.30.90.equal_work.sto</states_file>
 		
 		<coordinates_file />
 		

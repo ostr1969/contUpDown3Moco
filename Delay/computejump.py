@@ -8,7 +8,7 @@ if len(sys.argv)>1:
 	trajfile=sys.argv[1]
 print("-----start fixing actuators.xml-----")
 tofill = ET.parse('actuators.xml')
-filler = ET.parse('con3springs.osim')
+filler = ET.parse('d3springs.osim')
 tofillroot=tofill.getroot()
 gotsprings=filler.findall('.//PathSpring')
 print("removing all pathsprings from actuators.xml")
@@ -23,24 +23,25 @@ print("setting A/H/K to:",stifA,stifH,stifK)
 stiffOpt=getstovalue(trajfile,'stiffness opt');
 m=getstovalue(trajfile,'rest angle');restAng=float(m);
 if stiffOpt=="equal_work":
-	L1=float(gotsprings[0].find("resting_length").text)
-	dalfa2=140-restAng
-	F1max=stifK*140*pi/180*0.05
-	F2max=F1max*140/dalfa2
+	L1=float(gotsprings[2].find("resting_length").text)
+	print('Org rest L:',L1)
+	dalfa2=110-restAng
+	F1max=stifA*110*pi/180*0.05
+	F2max=F1max*110/dalfa2
 	k2=F2max/(0.05*dalfa2*pi/180)
 	restL=L1+restAng*pi/180*0.05
-	print("setting restlen,k of",gotsprings[0].get("name"),"to",restL,k2)
-	gotsprings[0].find("resting_length").text=str(restL)
+	print("setting restlen,k of",gotsprings[2].get("name"),"to",restL,k2)
+	gotsprings[2].find("resting_length").text=str(restL)
 
 print("replacing stiffnesses values at  actuators.xml")
-print("replacing knee stiff",stifA,"to",k2)
+print("replacing ankle stiff",stifA,"to",k2)
 for i in range(3):
 	if gotsprings[i].get("name")=="knee_spring":
-		gotsprings[i].find("stiffness").text=str(k2 )
+		gotsprings[i].find("stiffness").text=str(stifK )
 	if gotsprings[i].get("name")=="hip_spring":
 		gotsprings[i].find("stiffness").text=str(stifH) 
 	if gotsprings[i].get("name")=="ankle_spring":
-		gotsprings[i].find("stiffness").text=str(stifA )
+		gotsprings[i].find("stiffness").text=str(k2 )
 for r in gotsprings:
 	tofillroot[0].append(r)
 	print("appending:",r.attrib,"to actuators")

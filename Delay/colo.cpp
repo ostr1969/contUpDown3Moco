@@ -52,26 +52,26 @@ Model buildmodel(){
         //coordinates[1].set_default_value( q1);
         //coordinates[2].set_default_value( q2);
         //coordinates[3].set_default_value( q3);
-        auto& sp1=osimModel.updComponent<PathSpring>("/forceset/knee_spring");
-	double k1=kUnitSpring*data.ints[3].val;
+        auto& sp1=osimModel.updComponent<PathSpring>("/forceset/ankle_spring");
+	double k1=kUnitSpring*data.ints[5].val;
 	double L1=sp1.get_resting_length();
-	double k2,dalfa2=140-data.doubles[12].val;
+	double k2,dalfa2=110-data.doubles[12].val;
 	if (data.ints[13].val==0)//0 is for equal end force at 140deg
-		k2=k1*140/dalfa2;
+		k2=k1*110/dalfa2;
 	else
-	{double F1max=k1*140*Pi/180*0.05;//1 is for equal work
-		double F2max=F1max*140/dalfa2;
+	{double F1max=k1*110*Pi/180*0.05;//1 is for equal work
+		double F2max=F1max*110/dalfa2;
 		k2=F2max/(0.05*dalfa2*Pi/180);
 	}
         sp1.setStiffness(k2);
 	sp1.set_resting_length(L1+data.doubles[12].val*Pi/180*0.05);
 	cout<<"org stiffness:"<<k1<<endl;
 	cout<<"new resting length:"<<sp1.get_resting_length()<<" new stiff:"<<sp1.getStiffness()<<endl;
-        cout<<"numsprings:"<<data.ints[3].val<<endl;
+        cout<<"numsprings:"<<data.ints[5].val<<endl;
         auto& sp2=osimModel.updComponent<PathSpring>("/forceset/hip_spring");
         sp2.setStiffness(kUnitSpring*data.ints[4].val);
-        auto& sp3=osimModel.updComponent<PathSpring>("/forceset/ankle_spring");
-        sp3.setStiffness(kUnitSpring*data.ints[5].val);
+        auto& sp3=osimModel.updComponent<PathSpring>("/forceset/knee_spring");
+        sp3.setStiffness(kUnitSpring*data.ints[3].val);
 
 	OpenSim::Array<std::string> actuNames;
         for (const auto& actu : osimModel.getComponentList<DelpActuator>()) {
@@ -145,6 +145,7 @@ Model buildmodel(){
         c.log("coords:",pelrot,pelx,pely,q1,q2,q3);
 
        //function to compute coordinate tous and forces fore state si
+		//after changing specific coord value
         auto compT=[&](int cind,double pel_y){
         coordinates[cind].setValue(si, (pel_y), true);
         InverseDynamicsSolver insol(osimModel);
@@ -153,7 +154,9 @@ Model buildmodel(){
                 " tipx:"<<itip.getLocationInGround(si)[0]<<" torques:"<<init_tou<<endl;
         return init_tou;
         };
-        //function to search pelvis y for 800N force
+        //function to search pelvis y for equilibrium (800N force reaction)
+		//this is by solvig static equilibrium and minimizing
+		//virtual forces added by the InverseDynamicsSolver for equlibrium
         auto grad=[&](double init,int coordind,int udotind){
                 double xf,y1,err=1,x0=init,x1=init*0.99;
                 double y0=compT(coordind,x0)[udotind];
@@ -323,7 +326,7 @@ int parRun=0;
 	MocoSolution solution = study.solve();
     if (solution.isSealed()){
         cout<<"******DID NOT CONVERGED****"<<data.ints[3].val<<","<<data.ints[4].val<<
-		","<<data.ints[5].val<<endl;
+		","<<data.ints[5].val<<","<<data.doubles[12].val<<endl;
 	return 0;}
     //solution.unseal();
     debugLog<<"got objective:"<<solution.getObjective()<<endl;
@@ -410,10 +413,7 @@ int parRun=0;
     //cout<<"got objective:"<<solution.getObjective()<<endl;
     cout<<"numsprings[KHA]:"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val
 	<<"         jump:"<<jumphight<<endl;
-    if (parRun)
-	cout<<"MaxSprings[KHA]:"<<data.ints[6].val<<","<<data.ints[7].val<<","<<data.ints[8].val
-	              <<endl;
+    cout<<"init angle:"<<data.doubles[12].val<<endl;
 
-    AllRes<<"1,"<<data.ints[3].val<<","<<data.ints[4].val<<","<<data.ints[5].val<<endl;
     return EXIT_SUCCESS;
 }

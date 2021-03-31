@@ -10,8 +10,8 @@ set(OpenSimMoco_DIR /home/barako/MOCOBIN/cmake)
 set(OpenSim_DIR /home/barako/MOCOBIN/opensim-core/cmake)
 
 
-SET(CMAKE_CXX_COMPILER /opt/rh/devtoolset-7/root/usr/bin/g++) 
-SET(CMAKE_C_COMPILER /opt/rh/devtoolset-7/root/usr/bin/gcc) 
+#SET(CMAKE_CXX_COMPILER /opt/rh/devtoolset-7/root/usr/bin/g++) 
+#SET(CMAKE_C_COMPILER /opt/rh/devtoolset-7/root/usr/bin/gcc) 
 
 # List your source and header files here.
 #set(my_source_files JumpingOptimization.cpp PrescribedController.cpp)

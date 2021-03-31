@@ -544,7 +544,7 @@ cout<<__LINE__<<endl;
 	<<"\t"<<spring3->getTension(si)<<endl;
         //cout<<"spring arm:"<<spring1->computeMomentArm(si, coordinates[2])
         
-        osimModel.print("w3springs.osim");
+        osimModel.print("d3springs.osim");
 cout<<__LINE__<<endl;
     }
     catch (const std::exception& ex)

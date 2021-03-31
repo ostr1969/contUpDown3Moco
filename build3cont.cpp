@@ -223,7 +223,8 @@ try
         pelvis_ty.setName("pelvis_mov_y");
         double pelvis_ty_range[2] = { -1, 2 };
         pelvis_ty.setRange(pelvis_ty_range);
-        pelvis_ty.setDefaultValue(0.843);
+        //pelvis_ty.setDefaultValue(0.843);
+        pelvis_ty.setDefaultValue(0.8347);
 
          osimModel.addJoint(pelvisToGround); 
     /*	double allStiff = 10000, allDamping = 5., allTransition = 10.;
@@ -322,7 +323,8 @@ cout<<__LINE__<<endl;
         cout<<kneeRange[0]*180/Pi<<","<<kneeRange[1]*180/Pi<<endl;
         cout<<hipRange[0]*180/Pi<<","<<hipRange[1]*180/Pi<<endl;
 
-       double q0=80,q1=-100,q2=40,q3=-20 ;
+       //double q0=80,q1=-100,q2=40,q3=-20 ;
+       double q0=80,q1=-90,q2=0,q3=-0 ;
 
         //tip->updCoordinate().setRange(toeRange);
         ankle->updCoordinate().setRange(ankleRange);
@@ -484,6 +486,8 @@ cout<<__LINE__<<endl;
         //Vector init_tou=insol.solve(si,udot);
         //cout<<"torques for static equilibrium:"<<init_tou<<endl;
         osimModel.printDetailedInfo(si, std::cout);
+	Vec3 COM_position=osimModel.calcMassCenterPosition(si);
+	cout<<"com:"<<COM_position<<endl;
         //
 
         si.getQ().dump("Initial q's");
