@@ -1,0 +1,7 @@
+try squat jump from lower point of 20.0.0
+q1 q2 q3 pelvisx pelvisy pelvit rot
+in src/input.txt  the q and ror are in degrees
+use [dat,m,m2,strct20]=analisys_KHA(0,20,0); at matlab and
+strct20.UPMq to specify the start angles
+
+add mass of 3Kg to pulleybidy1 at the knee
